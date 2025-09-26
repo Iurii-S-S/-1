@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Дефекты - СистемаКонтроля</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="app">
+        <div v-if="currentUser">
+            <!-- Навигация -->
+            <nav-bar :user="currentUser" @logout="handleLogout" @nav-click="changeView"></nav-bar>
+            
+            <div class="container-fluid mt-4">
+                <div class="row">
+                    <!-- Боковая панель -->
+                    <side-bar :current-view="currentView" :user="currentUser" :stats="statistics"
+                             @filter-change="onFilterChange" @create-defect="showCreateModal = true"
+                             @export-data="exportToExcel" @refresh="fetchDefects"></side-bar>
+                    
+                    <!-- Основной контент -->
+                    <main class="col-lg-10 col-md-9">
+                        <!-- Заголовок и кнопки -->
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <div>
+                                <h1 class="h3 mb-1">Управление дефектами</h1>
+                                <p class="text-muted mb-0" v-if="pagination.total">
+                                    Показано {{ filteredDefects.length }} из {{ pagination.total }} дефектов
+                                </p>
+                            </div>
+                            <div>
+                                <button v-if="currentUser.role !== 'observer'" @click="showCreateModal = true" 
+                                        class="btn btn-success">
+                                    <i class="bi bi-plus-circle"></i> Создать дефект
+                                </button>
+                                <button @click="fetchDefects" class="btn btn-outline-primary ms-2">
+                                    <i class="bi bi-arrow-clockwise"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Таблица дефектов -->
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>Название</th>
+                                                <th>Проект</th>
+                                                <th>Приоритет</th>
+                                                <th>Исполнитель</th>
+                                                <th>Срок</th>
+                                                <th>Статус</th>
+                                                <th>Действия</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr v-for="defect in filteredDefects" :key="defect.id" 
+                                                :class="`priority-${defect.priority} status-${defect.status}`"
+                                                @click="viewDefect(defect.id)" style="cursor: pointer;">
+                                                <td><strong>#{{ defect.id }}</strong></td>
+                                                <td>
+                                                    <div class="defect-title">{{ defect.title }}</div>
+                                                    <small class="text-muted">{{ defect.description.substring(0, 100) }}...</small>
+                                                </td>
+                                                <td>{{ defect.project_name }}</td>
+                                                <td>
+                                                    <span class="badge" :class="priorityBadgeClass(defect.priority)">
+                                                        {{ getPriorityText(defect.priority) }}
+                                                    </span>
+                                                </td>
+                                                <td>{{ defect.assignee || 'Не назначен' }}</td>
+                                                <td>
+                                                    <span :class="{'text-danger fw-bold': defect.is_overdue}">
+                                                        {{ formatDate(defect.due_date) }}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <span class="badge" :class="statusBadgeClass(defect.status)">
+                                                        {{ getStatusText(defect.status) }}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <div class="btn-group btn-group-sm" role="group">
+                                                        <button @click.stop="viewDefect(defect.id)" 
+                                                                class="btn btn-outline-primary">
+                                                            <i class="bi bi-eye"></i>
+                                                        </button>
+                                                        <button v-if="canEditDefect(defect)" 
+                                                                @click.stop="editDefect(defect)" 
+                                                                class="btn btn-outline-secondary">
+                                                            <i class="bi bi-pencil"></i>
+                                                        </button>
+                                                        <button v-if="currentUser.role === 'manager'" 
+                                                                @click.stop="deleteDefect(defect.id)" 
+                                                                class="btn btn-outline-danger">
+                                                            <i class="bi bi-trash"></i>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                
+                                <!-- Пустое состояние -->
+                                <div v-if="filteredDefects.length === 0" class="text-center py-5">
+                                    <i class="bi bi-inbox display-1 text-muted"></i>
+                                    <p class="text-muted mt-3">Дефекты не найдены</p>
+                                    <button v-if="currentUser.role !== 'observer'" @click="showCreateModal = true" 
+                                            class="btn btn-primary">
+                                        <i class="bi bi-plus-circle"></i> Создать первый дефект
+                                    </button>
+                                </div>
+                                
+                                <!-- Пагинация -->
+                                <nav v-if="pagination.pages > 1" aria-label="Навигация по страницам">
+                                    <ul class="pagination justify-content-center mt-4">
+                                        <li class="page-item" :class="{ disabled: pagination.current_page === 1 }">
+                                            <a class="page-link" href="#" @click.prevent="changePage(pagination.current_page - 1)">
+                                                Назад
+                                            </a>
+                                        </li>
+                                        
+                                        <li v-for="page in visiblePages" :key="page" 
+                                            class="page-item" :class="{ active: page === pagination.current_page }">
+                                            <a class="page-link" href="#" @click.prevent="changePage(page)">
+                                                {{ page }}
+                                            </a>
+                                        </li>
+                                        
+                                        <li class="page-item" :class="{ disabled: pagination.current_page === pagination.pages }">
+                                            <a class="page-link" href="#" @click.prevent="changePage(pagination.current_page + 1)">
+                                                Вперед
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </nav>
+                            </div>
+                        </div>
+                    </main>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Модальное окно создания/редактирования дефекта -->
+        <div v-if="showCreateModal || editingDefect" class="modal fade show d-block" tabindex="-1" 
+             style="background-color: rgba(0,0,0,0.5)">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            {{ editingDefect ? 'Редактирование дефекта' : 'Создание нового дефекта' }}
+                        </h5>
+                        <button type="button" class="btn-close" @click="closeModal"></button>
+                    </div>
+                    
+                    <div class="modal-body">
+                        <form @submit.prevent="saveDefect">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Название дефекта *</label>
+                                    <input type="text" class="form-control" v-model="defectForm.title" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Проект *</label>
+                                    <select class="form-select" v-model="defectForm.project_id" required>
+                                        <option value="">Выберите проект</option>
+                                        <option v-for="project in projects" :key="project.id" :value="project.id">
+                                            {{ project.name }}
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Приоритет *</label>
+                                    <select class="form-select" v-model="defectForm.priority" required>
+                                        <option value="">Выберите приоритет</option>
+                                        <option value="high">Высокий</option>
+                                        <option value="medium">Средний</option>
+                                        <option value="low">Низкий</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Исполнитель</label>
+                                    <select class="form-select" v-model="defectForm.assignee_id">
+                                        <option value="">Не назначен</option>
+                                        <option v-for="engineer in engineers" :key="engineer.id" :value="engineer.id">
+                                            {{ engineer.name }}
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Описание *</label>
+                                <textarea class="form-control" rows="4" v-model="defectForm.description" required
+                                          placeholder="Подробное описание дефекта..."></textarea>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Срок исправления</label>
+                                    <input type="date" class="form-control" v-model="defectForm.due_date">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Статус</label>
+                                    <select class="form-select" v-model="defectForm.status" 
+                                            :disabled="!editingDefect || currentUser.role === 'observer'">
+                                        <option value="new">Новая</option>
+                                        <option value="in_progress">В работе</option>
+                                        <option value="review">На проверке</option>
+                                        <option value="closed">Закрыта</option>
+                                        <option value="cancelled">Отменена</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" @click="closeModal">Отмена</button>
+                        <button type="button" class="btn btn-primary" @click="saveDefect" :disabled="saving">
+                            <span v-if="saving" class="spinner-border spinner-border-sm me-2"></span>
+                            {{ editingDefect ? 'Сохранить' : 'Создать' }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Модальное окно просмотра дефекта -->
+        <defect-modal v-if="selectedDefect" :defect="selectedDefect" :user="currentUser" 
+                     @close="selectedDefect = null" @defect-updated="fetchDefects"></defect-modal>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue@3.3.4/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios@1.5.0/dist/axios.min.js"></script>
+    <script src="components.js"></script>
+    <script>
+        const { createApp, ref, computed, onMounted } = Vue;
+        
+        const DefectsApp = {
+            setup() {
+                const currentUser = ref(JSON.parse(localStorage.getItem('currentUser') || 'null'));
+                const currentView = ref('defects');
+                const defects = ref([]);
+                const projects = ref([]);
+                const engineers = ref([]);
+                const statistics = ref({});
+                const selectedDefect = ref(null);
+                const editingDefect = ref(null);
+                const showCreateModal = ref(false);
+                const saving = ref(false);
+                
+                const filters = ref({
+                    status: '',
+                    priority: '',
+                    search: '',
+                    page: 1,
+                    per_page: 20
+                });
+                
+                const defectForm = ref({
+                    title: '',
+                    description: '',
+                    priority: 'medium',
+                    status: 'new',
+                    project_id: '',
+                    assignee_id: '',
+                    due_date: ''
+                });
+                
+                const pagination = ref({
+                    total: 0,
+                    pages: 0,
+                    current_page: 1,
+                    per_page: 20
+                });
+                
+                const filteredDefects = computed(() => defects.value);
+                
+                const visiblePages = computed(() => {
+                    const current = pagination.value.current_page;
+                    const total = pagination.value.pages;
+                    const range = 2; // Количество страниц по бокам от текущей
+                    
+                    let start = Math.max(1, current - range);
+                    let end = Math.min(total, current + range);
+                    
+                    // Корректируем если near the beginning
+                    if (current <= range) {
+                        end = Math.min(total, range * 2 + 1);
+                    }
+                    
+                    // Корректируем если near the end
+                    if (current >= total - range) {
+                        start = Math.max(1, total - range * 2);
+                    }
+                    
+                    const pages = [];
+                    for (let i = start; i <= end; i++) {
+                        pages.push(i);
+                    }
+                    return pages;
+                });
+                
+                const fetchDefects = async () => {
+                    try {
+                        const params = new URLSearchParams();
+                        Object.keys(filters.value).forEach(key => {
+                            if (filters.value[key]) {
+                                params.append(key, filters.value[key]);
+                            }
+                        });
+                        
+                        const response = await axios.get(`/api/v1/defects?${params}`);
+                        
+                        if (response.data.success) {
+                            defects.value = response.data.defects;
+                            pagination.value = response.data.pagination;
+                        }
+                    } catch (error) {
+                        console.error('Ошибка загрузки дефектов:', error);
+                    }
+                };
+                
+                const fetchProjects = async () => {
+                    try {
+                        const response = await axios.get('/api/v1/projects');
+                        if (response.data.success) {
+                            projects.value = response.data.projects;
+                        }
+                    } catch (error) {
+                        console.error('Ошибка загрузки проектов:', error);
+                    }
+                };
+                
+                const fetchEngineers = async () => {
+                    try {
+                        const response = await axios.get('/api/v1/users/engineers');
+                        if (response.data.success) {
+                            engineers.value = response.data.engineers;
+                        }
+                    } catch (error) {
+                        console.error('Ошибка загрузки инженеров:', error);
+                    }
+                };
+                
+                const fetchStatistics = async () => {
+                    try {
+                        const response = await axios.get('/api/v1/statistics/dashboard');
+                        if (response.data.success) {
+                            statistics.value = response.data.statistics;
+                        }
+                    } catch (error) {
+                        console.error('Ошибка загрузки статистики:', error);
+                    }
+                };
+                
+                // ... остальные методы аналогично предыдущим компонентам ...
+                
+                onMounted(() => {
+                    if (!currentUser.value) {
+                        window.location.href = 'index.html';
+                        return;
+                    }
+                    
+                    fetchDefects();
+                    fetchProjects();
+                    fetchEngineers();
+                    fetchStatistics();
+                });
+                
+                return {
+                    currentUser,
+                    currentView,
+                    defects,
+                    projects,
+                    engineers,
+                    statistics,
+                    selectedDefect,
+                    editingDefect,
+                    showCreateModal,
+                    saving,
+                    filters,
+                    defectForm,
+                    pagination,
+                    filteredDefects,
+                    visiblePages,
+                    fetchDefects,
+                    fetchProjects,
+                    fetchEngineers,
+                    fetchStatistics,
+                    // ... остальные методы и computed свойства ...
+                };
+            }
+        };
+        
+        const app = createApp(DefectsApp);
+        app.component('nav-bar', NavBarComponent);
+        app.component('side-bar', SideBarComponent);
+        app.component('defect-modal', DefectModalComponent);
+        app.mount('#app');
+    </script>
+</body>
+</html>
