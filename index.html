@@ -1,0 +1,1701 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Система контроля дефектов на стройке</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --light-color: #ecf0f1;
+            --dark-color: #34495e;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .user-role {
+            background-color: var(--secondary-color);
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+        }
+        
+        .logout-btn {
+            background: none;
+            border: 1px solid white;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .logout-btn:hover {
+            background-color: white;
+            color: var(--primary-color);
+        }
+        
+        .auth-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 80vh;
+        }
+        
+        .auth-form {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        .auth-form h2 {
+            margin-bottom: 1.5rem;
+            text-align: center;
+            color: var(--primary-color);
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        
+        .btn {
+            display: inline-block;
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s;
+            text-align: center;
+        }
+        
+        .btn:hover {
+            background-color: #2980b9;
+        }
+        
+        .btn-block {
+            display: block;
+            width: 100%;
+        }
+        
+        .btn-success {
+            background-color: var(--success-color);
+        }
+        
+        .btn-success:hover {
+            background-color: #219653;
+        }
+        
+        .btn-warning {
+            background-color: var(--warning-color);
+        }
+        
+        .btn-warning:hover {
+            background-color: #e67e22;
+        }
+        
+        .btn-danger {
+            background-color: var(--danger-color);
+        }
+        
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
+        
+        .dashboard {
+            padding: 2rem 0;
+        }
+        
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 1.5rem;
+        }
+        
+        .tab {
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        .tab.active {
+            border-bottom-color: var(--secondary-color);
+            color: var(--secondary-color);
+            font-weight: 500;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .filters {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .filter-group label {
+            font-size: 0.8rem;
+            margin-bottom: 5px;
+            color: #666;
+        }
+        
+        .defects-list {
+            display: grid;
+            gap: 1rem;
+        }
+        
+        .defect-item {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 1rem;
+            border-left: 4px solid var(--secondary-color);
+        }
+        
+        .defect-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.5rem;
+        }
+        
+        .defect-title {
+            font-weight: 500;
+            font-size: 1.1rem;
+            color: var(--primary-color);
+        }
+        
+        .defect-priority {
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            color: white;
+        }
+        
+        .priority-high {
+            background-color: var(--danger-color);
+        }
+        
+        .priority-medium {
+            background-color: var(--warning-color);
+        }
+        
+        .priority-low {
+            background-color: var(--success-color);
+        }
+        
+        .defect-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+        
+        .defect-status {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            background-color: #eee;
+        }
+        
+        .status-new {
+            background-color: #e3f2fd;
+            color: #1976d2;
+        }
+        
+        .status-in-progress {
+            background-color: #fff3e0;
+            color: #f57c00;
+        }
+        
+        .status-in-review {
+            background-color: #e8f5e9;
+            color: #388e3c;
+        }
+        
+        .status-closed {
+            background-color: #f5f5f5;
+            color: #616161;
+        }
+        
+        .status-cancelled {
+            background-color: #ffebee;
+            color: #d32f2f;
+        }
+        
+        .defect-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background-color: white;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-body {
+            padding: 1.5rem;
+        }
+        
+        .modal-footer {
+            padding: 1.5rem;
+            border-top: 1px solid #eee;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 1rem;
+        }
+        
+        .form-row .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+        
+        .comments-section {
+            margin-top: 1.5rem;
+        }
+        
+        .comment {
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .comment:last-child {
+            border-bottom: none;
+        }
+        
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+        
+        .comment-author {
+            font-weight: 500;
+        }
+        
+        .comment-date {
+            color: #666;
+            font-size: 0.8rem;
+        }
+        
+        .comment-form {
+            margin-top: 1rem;
+        }
+        
+        .history-section {
+            margin-top: 1.5rem;
+        }
+        
+        .history-item {
+            padding: 0.75rem;
+            border-bottom: 1px solid #eee;
+            font-size: 0.9rem;
+        }
+        
+        .history-item:last-child {
+            border-bottom: none;
+        }
+        
+        .history-date {
+            color: #666;
+            font-size: 0.8rem;
+        }
+        
+        .charts-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        
+        .chart {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+        }
+        
+        .chart-title {
+            margin-bottom: 1rem;
+            font-weight: 500;
+            color: var(--primary-color);
+        }
+        
+        .chart-placeholder {
+            height: 200px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #666;
+        }
+        
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .dashboard-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .filters {
+                flex-direction: column;
+            }
+            
+            .form-row {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Авторизация -->
+    <div id="auth-section" class="auth-container">
+        <div class="auth-form">
+            <h2>Вход в систему</h2>
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="username">Имя пользователя</label>
+                    <input type="text" id="username" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Пароль</label>
+                    <input type="password" id="password" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-block">Войти</button>
+            </form>
+            <div style="margin-top: 1rem; text-align: center;">
+                <p>Демо-аккаунты:</p>
+                <p>Менеджер: manager / password</p>
+                <p>Инженер: engineer / password</p>
+                <p>Наблюдатель: observer / password</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Основной интерфейс -->
+    <div id="app-section" style="display: none;">
+        <header>
+            <div class="container">
+                <div class="header-content">
+                    <div class="logo">Система контроля дефектов</div>
+                    <div class="user-info">
+                        <span id="current-user">Пользователь</span>
+                        <span id="current-role" class="user-role">Роль</span>
+                        <button id="logout-btn" class="logout-btn">Выйти</button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="container">
+            <div class="dashboard">
+                <div class="dashboard-header">
+                    <h1>Панель управления</h1>
+                    <button id="add-defect-btn" class="btn">Добавить дефект</button>
+                </div>
+
+                <div class="tabs">
+                    <div class="tab active" data-tab="defects">Дефекты</div>
+                    <div class="tab" data-tab="projects">Проекты</div>
+                    <div class="tab" data-tab="reports">Отчеты</div>
+                </div>
+
+                <!-- Вкладка дефектов -->
+                <div id="defects-tab" class="tab-content active">
+                    <div class="card">
+                        <div class="filters">
+                            <div class="filter-group">
+                                <label>Статус</label>
+                                <select id="status-filter" class="form-control">
+                                    <option value="">Все</option>
+                                    <option value="new">Новая</option>
+                                    <option value="in-progress">В работе</option>
+                                    <option value="in-review">На проверке</option>
+                                    <option value="closed">Закрыта</option>
+                                    <option value="cancelled">Отменена</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label>Приоритет</label>
+                                <select id="priority-filter" class="form-control">
+                                    <option value="">Все</option>
+                                    <option value="high">Высокий</option>
+                                    <option value="medium">Средний</option>
+                                    <option value="low">Низкий</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label>Исполнитель</label>
+                                <select id="assignee-filter" class="form-control">
+                                    <option value="">Все</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label>Проект</label>
+                                <select id="project-filter" class="form-control">
+                                    <option value="">Все</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label>&nbsp;</label>
+                                <button id="apply-filters" class="btn">Применить</button>
+                            </div>
+                            <div class="filter-group">
+                                <label>&nbsp;</label>
+                                <button id="export-btn" class="btn">Экспорт</button>
+                            </div>
+                        </div>
+
+                        <div id="defects-list" class="defects-list">
+                            <!-- Список дефектов будет здесь -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Вкладка проектов -->
+                <div id="projects-tab" class="tab-content">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>Управление проектами</h2>
+                            <button id="add-project-btn" class="btn">Добавить проект</button>
+                        </div>
+                        <div id="projects-list">
+                            <!-- Список проектов будет здесь -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Вкладка отчетов -->
+                <div id="reports-tab" class="tab-content">
+                    <div class="card">
+                        <h2>Аналитические отчеты</h2>
+                        <div class="charts-container">
+                            <div class="chart">
+                                <div class="chart-title">Статусы дефектов</div>
+                                <div class="chart-placeholder">График статусов дефектов</div>
+                            </div>
+                            <div class="chart">
+                                <div class="chart-title">Дефекты по приоритетам</div>
+                                <div class="chart-placeholder">График дефектов по приоритетам</div>
+                            </div>
+                            <div class="chart">
+                                <div class="chart-title">Дефекты по исполнителям</div>
+                                <div class="chart-placeholder">График дефектов по исполнителям</div>
+                            </div>
+                            <div class="chart">
+                                <div class="chart-title">Дефекты по проектам</div>
+                                <div class="chart-placeholder">График дефектов по проектам</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Модальное окно добавления/редактирования дефекта -->
+    <div id="defect-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="defect-modal-title">Добавить дефект</h3>
+                <button class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="defect-form">
+                    <div class="form-group">
+                        <label for="defect-title">Заголовок</label>
+                        <input type="text" id="defect-title" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="defect-description">Описание</label>
+                        <textarea id="defect-description" class="form-control" rows="4" required></textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="defect-priority">Приоритет</label>
+                            <select id="defect-priority" class="form-control" required>
+                                <option value="low">Низкий</option>
+                                <option value="medium">Средний</option>
+                                <option value="high">Высокий</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="defect-project">Проект</label>
+                            <select id="defect-project" class="form-control" required>
+                                <option value="">Выберите проект</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="defect-assignee">Исполнитель</label>
+                            <select id="defect-assignee" class="form-control" required>
+                                <option value="">Выберите исполнителя</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="defect-due-date">Срок выполнения</label>
+                            <input type="date" id="defect-due-date" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="defect-attachments">Вложения</label>
+                        <input type="file" id="defect-attachments" class="form-control" multiple>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" id="cancel-defect-btn">Отмена</button>
+                <button class="btn btn-success" id="save-defect-btn">Сохранить</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно просмотра дефекта -->
+    <div id="view-defect-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="view-defect-title">Дефект</h3>
+                <button class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="view-defect-content">
+                    <!-- Содержимое дефекта будет здесь -->
+                </div>
+                
+                <div class="comments-section">
+                    <h4>Комментарии</h4>
+                    <div id="comments-list">
+                        <!-- Список комментариев будет здесь -->
+                    </div>
+                    <div class="comment-form">
+                        <textarea id="new-comment" class="form-control" rows="3" placeholder="Добавить комментарий"></textarea>
+                        <button id="add-comment-btn" class="btn" style="margin-top: 10px;">Добавить комментарий</button>
+                    </div>
+                </div>
+                
+                <div class="history-section">
+                    <h4>История изменений</h4>
+                    <div id="history-list">
+                        <!-- История изменений будет здесь -->
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" id="close-view-modal-btn">Закрыть</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно проекта -->
+    <div id="project-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="project-modal-title">Добавить проект</h3>
+                <button class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="project-form">
+                    <div class="form-group">
+                        <label for="project-name">Название проекта</label>
+                        <input type="text" id="project-name" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="project-description">Описание</label>
+                        <textarea id="project-description" class="form-control" rows="4"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="project-manager">Менеджер проекта</label>
+                        <select id="project-manager" class="form-control" required>
+                            <option value="">Выберите менеджера</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" id="cancel-project-btn">Отмена</button>
+                <button class="btn btn-success" id="save-project-btn">Сохранить</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Данные приложения
+        const appData = {
+            currentUser: null,
+            users: [
+                { id: 1, username: 'manager', password: 'password', role: 'manager', name: 'Алексей Петров' },
+                { id: 2, username: 'engineer', password: 'password', role: 'engineer', name: 'Иван Сидоров' },
+                { id: 3, username: 'observer', password: 'password', role: 'observer', name: 'Мария Иванова' },
+                { id: 4, username: 'engineer2', password: 'password', role: 'engineer', name: 'Сергей Козлов' }
+            ],
+            projects: [],
+            defects: [],
+            comments: [],
+            history: []
+        };
+
+        // Инициализация приложения
+        document.addEventListener('DOMContentLoaded', function() {
+            // Загрузка данных из Local Storage
+            loadData();
+            
+            // Настройка обработчиков событий
+            setupEventListeners();
+            
+            // Проверка авторизации
+            checkAuth();
+        });
+
+        // Загрузка данных из Local Storage
+        function loadData() {
+            const storedUsers = localStorage.getItem('defectSystemUsers');
+            const storedProjects = localStorage.getItem('defectSystemProjects');
+            const storedDefects = localStorage.getItem('defectSystemDefects');
+            const storedComments = localStorage.getItem('defectSystemComments');
+            const storedHistory = localStorage.getItem('defectSystemHistory');
+            
+            if (storedUsers) appData.users = JSON.parse(storedUsers);
+            if (storedProjects) appData.projects = JSON.parse(storedProjects);
+            if (storedDefects) appData.defects = JSON.parse(storedDefects);
+            if (storedComments) appData.comments = JSON.parse(storedComments);
+            if (storedHistory) appData.history = JSON.parse(storedHistory);
+            
+            // Если проектов нет, создаем демо-данные
+            if (appData.projects.length === 0) {
+                initializeDemoData();
+            }
+        }
+
+        // Сохранение данных в Local Storage
+        function saveData() {
+            localStorage.setItem('defectSystemUsers', JSON.stringify(appData.users));
+            localStorage.setItem('defectSystemProjects', JSON.stringify(appData.projects));
+            localStorage.setItem('defectSystemDefects', JSON.stringify(appData.defects));
+            localStorage.setItem('defectSystemComments', JSON.stringify(appData.comments));
+            localStorage.setItem('defectSystemHistory', JSON.stringify(appData.history));
+        }
+
+        // Инициализация демо-данных
+        function initializeDemoData() {
+            // Проекты
+            appData.projects = [
+                { id: 1, name: 'ЖК "Северный"', description: 'Многоэтажный жилой комплекс', managerId: 1 },
+                { id: 2, name: 'Торговый центр "Восток"', description: 'Торгово-развлекательный центр', managerId: 1 },
+                { id: 3, name: 'Офисное здание "Центр"', description: 'Бизнес-центр класса А', managerId: 1 }
+            ];
+            
+            // Дефекты
+            appData.defects = [
+                { 
+                    id: 1, 
+                    title: 'Трещина в несущей стене', 
+                    description: 'Обнаружена трещина шириной 2 мм в несущей стене на 3 этаже', 
+                    priority: 'high', 
+                    status: 'new',
+                    projectId: 1,
+                    assigneeId: 2,
+                    reporterId: 3,
+                    dueDate: '2023-12-15',
+                    createdAt: new Date('2023-11-01').toISOString(),
+                    updatedAt: new Date('2023-11-01').toISOString()
+                },
+                { 
+                    id: 2, 
+                    title: 'Протечка в системе отопления', 
+                    description: 'Протечка в стояке отопления на 5 этаже', 
+                    priority: 'high', 
+                    status: 'in-progress',
+                    projectId: 1,
+                    assigneeId: 4,
+                    reporterId: 1,
+                    dueDate: '2023-11-20',
+                    createdAt: new Date('2023-10-28').toISOString(),
+                    updatedAt: new Date('2023-11-05').toISOString()
+                },
+                { 
+                    id: 3, 
+                    title: 'Неровности в отделке потолка', 
+                    description: 'Заметные неровности на потолке в коридоре 2 этажа', 
+                    priority: 'medium', 
+                    status: 'in-review',
+                    projectId: 2,
+                    assigneeId: 2,
+                    reporterId: 3,
+                    dueDate: '2023-11-25',
+                    createdAt: new Date('2023-10-25').toISOString(),
+                    updatedAt: new Date('2023-11-10').toISOString()
+                },
+                { 
+                    id: 4, 
+                    title: 'Неисправность лифта', 
+                    description: 'Лифт №2 периодически останавливается между этажами', 
+                    priority: 'high', 
+                    status: 'closed',
+                    projectId: 3,
+                    assigneeId: 4,
+                    reporterId: 1,
+                    dueDate: '2023-11-10',
+                    createdAt: new Date('2023-10-20').toISOString(),
+                    updatedAt: new Date('2023-11-05').toISOString()
+                }
+            ];
+            
+            // Комментарии
+            appData.comments = [
+                { id: 1, defectId: 2, userId: 2, text: 'Начал работу по устранению протечки', createdAt: new Date('2023-11-05').toISOString() },
+                { id: 2, defectId: 2, userId: 1, text: 'Прошу ускорить работы', createdAt: new Date('2023-11-06').toISOString() },
+                { id: 3, defectId: 3, userId: 2, text: 'Выполнил выравнивание потолка', createdAt: new Date('2023-11-10').toISOString() },
+                { id: 4, defectId: 3, userId: 3, text: 'Проверил качество работ, все отлично', createdAt: new Date('2023-11-11').toISOString() }
+            ];
+            
+            // История изменений
+            appData.history = [
+                { id: 1, defectId: 2, userId: 2, action: 'Статус изменен: Новая → В работе', createdAt: new Date('2023-11-05').toISOString() },
+                { id: 2, defectId: 3, userId: 2, action: 'Статус изменен: В работе → На проверке', createdAt: new Date('2023-11-10').toISOString() },
+                { id: 3, defectId: 4, userId: 1, action: 'Статус изменен: На проверке → Закрыта', createdAt: new Date('2023-11-05').toISOString() }
+            ];
+            
+            saveData();
+        }
+
+        // Настройка обработчиков событий
+        function setupEventListeners() {
+            // Форма авторизации
+            document.getElementById('login-form').addEventListener('submit', handleLogin);
+            
+            // Кнопка выхода
+            document.getElementById('logout-btn').addEventListener('click', handleLogout);
+            
+            // Вкладки
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    switchTab(this.dataset.tab);
+                });
+            });
+            
+            // Кнопка добавления дефекта
+            document.getElementById('add-defect-btn').addEventListener('click', showAddDefectModal);
+            
+            // Кнопка добавления проекта
+            document.getElementById('add-project-btn').addEventListener('click', showAddProjectModal);
+            
+            // Модальные окна
+            document.querySelectorAll('.close-btn').forEach(btn => {
+                btn.addEventListener('click', closeAllModals);
+            });
+            
+            document.getElementById('cancel-defect-btn').addEventListener('click', closeAllModals);
+            document.getElementById('cancel-project-btn').addEventListener('click', closeAllModals);
+            document.getElementById('close-view-modal-btn').addEventListener('click', closeAllModals);
+            
+            // Сохранение дефекта
+            document.getElementById('save-defect-btn').addEventListener('click', saveDefect);
+            
+            // Сохранение проекта
+            document.getElementById('save-project-btn').addEventListener('click', saveProject);
+            
+            // Фильтры
+            document.getElementById('apply-filters').addEventListener('click', applyFilters);
+            
+            // Экспорт
+            document.getElementById('export-btn').addEventListener('click', exportData);
+            
+            // Добавление комментария
+            document.getElementById('add-comment-btn').addEventListener('click', addComment);
+        }
+
+        // Проверка авторизации
+        function checkAuth() {
+            const currentUser = localStorage.getItem('defectSystemCurrentUser');
+            if (currentUser) {
+                appData.currentUser = JSON.parse(currentUser);
+                showApp();
+            } else {
+                showAuth();
+            }
+        }
+
+        // Показать экран авторизации
+        function showAuth() {
+            document.getElementById('auth-section').style.display = 'flex';
+            document.getElementById('app-section').style.display = 'none';
+        }
+
+        // Показать основное приложение
+        function showApp() {
+            document.getElementById('auth-section').style.display = 'none';
+            document.getElementById('app-section').style.display = 'block';
+            
+            // Обновление информации о пользователе
+            document.getElementById('current-user').textContent = appData.currentUser.name;
+            document.getElementById('current-role').textContent = getRoleName(appData.currentUser.role);
+            
+            // Настройка интерфейса в зависимости от роли
+            setupUIForRole();
+            
+            // Загрузка данных интерфейса
+            loadUI();
+        }
+
+        // Получить название роли
+        function getRoleName(role) {
+            const roles = {
+                'manager': 'Менеджер',
+                'engineer': 'Инженер',
+                'observer': 'Наблюдатель'
+            };
+            return roles[role] || role;
+        }
+
+        // Настройка интерфейса в зависимости от роли
+        function setupUIForRole() {
+            const role = appData.currentUser.role;
+            const addDefectBtn = document.getElementById('add-defect-btn');
+            const addProjectBtn = document.getElementById('add-project-btn');
+            
+            if (role === 'observer') {
+                addDefectBtn.style.display = 'none';
+                addProjectBtn.style.display = 'none';
+            } else if (role === 'engineer') {
+                addProjectBtn.style.display = 'none';
+            }
+        }
+
+        // Обработка авторизации
+        function handleLogin(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            const user = appData.users.find(u => u.username === username && u.password === password);
+            
+            if (user) {
+                appData.currentUser = user;
+                localStorage.setItem('defectSystemCurrentUser', JSON.stringify(user));
+                showApp();
+            } else {
+                alert('Неверное имя пользователя или пароль');
+            }
+        }
+
+        // Обработка выхода
+        function handleLogout() {
+            appData.currentUser = null;
+            localStorage.removeItem('defectSystemCurrentUser');
+            showAuth();
+        }
+
+        // Переключение вкладок
+        function switchTab(tabName) {
+            // Сброс активных вкладок
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Активация выбранной вкладки
+            document.querySelector(`.tab[data-tab="${tabName}"]`).classList.add('active');
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+            
+            // Загрузка данных для вкладки
+            if (tabName === 'defects') {
+                loadDefects();
+            } else if (tabName === 'projects') {
+                loadProjects();
+            } else if (tabName === 'reports') {
+                loadReports();
+            }
+        }
+
+        // Загрузка интерфейса
+        function loadUI() {
+            loadDefects();
+            populateFilters();
+        }
+
+        // Загрузка списка дефектов
+        function loadDefects() {
+            const defectsList = document.getElementById('defects-list');
+            defectsList.innerHTML = '';
+            
+            // Фильтрация дефектов в зависимости от роли
+            let filteredDefects = [...appData.defects];
+            
+            if (appData.currentUser.role === 'engineer') {
+                filteredDefects = filteredDefects.filter(defect => 
+                    defect.assigneeId === appData.currentUser.id || 
+                    defect.reporterId === appData.currentUser.id
+                );
+            }
+            
+            // Применение дополнительных фильтров
+            const statusFilter = document.getElementById('status-filter').value;
+            const priorityFilter = document.getElementById('priority-filter').value;
+            const assigneeFilter = document.getElementById('assignee-filter').value;
+            const projectFilter = document.getElementById('project-filter').value;
+            
+            if (statusFilter) {
+                filteredDefects = filteredDefects.filter(defect => defect.status === statusFilter);
+            }
+            
+            if (priorityFilter) {
+                filteredDefects = filteredDefects.filter(defect => defect.priority === priorityFilter);
+            }
+            
+            if (assigneeFilter) {
+                filteredDefects = filteredDefects.filter(defect => defect.assigneeId === parseInt(assigneeFilter));
+            }
+            
+            if (projectFilter) {
+                filteredDefects = filteredDefects.filter(defect => defect.projectId === parseInt(projectFilter));
+            }
+            
+            // Сортировка по дате создания (новые сверху)
+            filteredDefects.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            
+            // Отображение дефектов
+            if (filteredDefects.length === 0) {
+                defectsList.innerHTML = '<p>Дефекты не найдены</p>';
+                return;
+            }
+            
+            filteredDefects.forEach(defect => {
+                const project = appData.projects.find(p => p.id === defect.projectId);
+                const assignee = appData.users.find(u => u.id === defect.assigneeId);
+                const reporter = appData.users.find(u => u.id === defect.reporterId);
+                
+                const defectElement = document.createElement('div');
+                defectElement.className = 'defect-item';
+                defectElement.innerHTML = `
+                    <div class="defect-header">
+                        <div class="defect-title">${defect.title}</div>
+                        <div class="defect-priority priority-${defect.priority}">
+                            ${defect.priority === 'high' ? 'Высокий' : defect.priority === 'medium' ? 'Средний' : 'Низкий'}
+                        </div>
+                    </div>
+                    <div class="defect-meta">
+                        <span>Проект: ${project ? project.name : 'Не указан'}</span>
+                        <span>Исполнитель: ${assignee ? assignee.name : 'Не назначен'}</span>
+                        <span>Срок: ${formatDate(defect.dueDate)}</span>
+                    </div>
+                    <div class="defect-description">${defect.description}</div>
+                    <div class="defect-footer">
+                        <span class="defect-status status-${defect.status}">
+                            ${getStatusText(defect.status)}
+                        </span>
+                        <div class="defect-actions">
+                            <button class="btn btn-sm view-defect" data-id="${defect.id}">Просмотр</button>
+                            ${appData.currentUser.role !== 'observer' ? `
+                                <button class="btn btn-sm edit-defect" data-id="${defect.id}">Редактировать</button>
+                                ${defect.status !== 'closed' && defect.status !== 'cancelled' ? `
+                                    <button class="btn btn-sm btn-success resolve-defect" data-id="${defect.id}">Решить</button>
+                                ` : ''}
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+                
+                defectsList.appendChild(defectElement);
+            });
+            
+            // Добавление обработчиков событий для кнопок дефектов
+            document.querySelectorAll('.view-defect').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    viewDefect(parseInt(this.dataset.id));
+                });
+            });
+            
+            document.querySelectorAll('.edit-defect').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    editDefect(parseInt(this.dataset.id));
+                });
+            });
+            
+            document.querySelectorAll('.resolve-defect').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    resolveDefect(parseInt(this.dataset.id));
+                });
+            });
+        }
+
+        // Получить текст статуса
+        function getStatusText(status) {
+            const statuses = {
+                'new': 'Новая',
+                'in-progress': 'В работе',
+                'in-review': 'На проверке',
+                'closed': 'Закрыта',
+                'cancelled': 'Отменена'
+            };
+            return statuses[status] || status;
+        }
+
+        // Форматирование даты
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('ru-RU');
+        }
+
+        // Заполнение фильтров
+        function populateFilters() {
+            const assigneeFilter = document.getElementById('assignee-filter');
+            const projectFilter = document.getElementById('project-filter');
+            const defectAssignee = document.getElementById('defect-assignee');
+            const defectProject = document.getElementById('defect-project');
+            const projectManager = document.getElementById('project-manager');
+            
+            // Очистка существующих опций (кроме первой)
+            while (assigneeFilter.children.length > 1) {
+                assigneeFilter.removeChild(assigneeFilter.lastChild);
+            }
+            
+            while (projectFilter.children.length > 1) {
+                projectFilter.removeChild(projectFilter.lastChild);
+            }
+            
+            while (defectAssignee.children.length > 1) {
+                defectAssignee.removeChild(defectAssignee.lastChild);
+            }
+            
+            while (defectProject.children.length > 1) {
+                defectProject.removeChild(defectProject.lastChild);
+            }
+            
+            while (projectManager.children.length > 1) {
+                projectManager.removeChild(projectManager.lastChild);
+            }
+            
+            // Заполнение пользователями (инженеры и менеджеры)
+            appData.users
+                .filter(user => user.role === 'engineer' || user.role === 'manager')
+                .forEach(user => {
+                    const option1 = document.createElement('option');
+                    option1.value = user.id;
+                    option1.textContent = user.name;
+                    assigneeFilter.appendChild(option1);
+                    
+                    const option2 = document.createElement('option');
+                    option2.value = user.id;
+                    option2.textContent = user.name;
+                    defectAssignee.appendChild(option2);
+                    
+                    if (user.role === 'manager') {
+                        const option3 = document.createElement('option');
+                        option3.value = user.id;
+                        option3.textContent = user.name;
+                        projectManager.appendChild(option3);
+                    }
+                });
+            
+            // Заполнение проектами
+            appData.projects.forEach(project => {
+                const option1 = document.createElement('option');
+                option1.value = project.id;
+                option1.textContent = project.name;
+                projectFilter.appendChild(option1);
+                
+                const option2 = document.createElement('option');
+                option2.value = project.id;
+                option2.textContent = project.name;
+                defectProject.appendChild(option2);
+            });
+        }
+
+        // Применение фильтров
+        function applyFilters() {
+            loadDefects();
+        }
+
+        // Показать модальное окно добавления дефекта
+        function showAddDefectModal() {
+            document.getElementById('defect-modal-title').textContent = 'Добавить дефект';
+            document.getElementById('defect-form').reset();
+            document.getElementById('defect-modal').classList.add('active');
+        }
+
+        // Показать модальное окно редактирования дефекта
+        function editDefect(defectId) {
+            const defect = appData.defects.find(d => d.id === defectId);
+            if (!defect) return;
+            
+            document.getElementById('defect-modal-title').textContent = 'Редактировать дефект';
+            document.getElementById('defect-title').value = defect.title;
+            document.getElementById('defect-description').value = defect.description;
+            document.getElementById('defect-priority').value = defect.priority;
+            document.getElementById('defect-project').value = defect.projectId;
+            document.getElementById('defect-assignee').value = defect.assigneeId;
+            document.getElementById('defect-due-date').value = defect.dueDate;
+            
+            // Сохранение ID дефекта для обновления
+            document.getElementById('defect-form').dataset.defectId = defectId;
+            
+            document.getElementById('defect-modal').classList.add('active');
+        }
+
+        // Просмотр дефекта
+        function viewDefect(defectId) {
+            const defect = appData.defects.find(d => d.id === defectId);
+            if (!defect) return;
+            
+            const project = appData.projects.find(p => p.id === defect.projectId);
+            const assignee = appData.users.find(u => u.id === defect.assigneeId);
+            const reporter = appData.users.find(u => u.id === defect.reporterId);
+            
+            document.getElementById('view-defect-title').textContent = defect.title;
+            
+            let content = `
+                <div class="defect-details">
+                    <p><strong>Описание:</strong> ${defect.description}</p>
+                    <div class="defect-meta">
+                        <p><strong>Проект:</strong> ${project ? project.name : 'Не указан'}</p>
+                        <p><strong>Исполнитель:</strong> ${assignee ? assignee.name : 'Не назначен'}</p>
+                        <p><strong>Автор:</strong> ${reporter ? reporter.name : 'Неизвестен'}</p>
+                        <p><strong>Приоритет:</strong> 
+                            <span class="defect-priority priority-${defect.priority}">
+                                ${defect.priority === 'high' ? 'Высокий' : defect.priority === 'medium' ? 'Средний' : 'Низкий'}
+                            </span>
+                        </p>
+                        <p><strong>Статус:</strong> 
+                            <span class="defect-status status-${defect.status}">
+                                ${getStatusText(defect.status)}
+                            </span>
+                        </p>
+                        <p><strong>Срок выполнения:</strong> ${formatDate(defect.dueDate)}</p>
+                        <p><strong>Дата создания:</strong> ${formatDate(defect.createdAt)}</p>
+                        <p><strong>Последнее обновление:</strong> ${formatDate(defect.updatedAt)}</p>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('view-defect-content').innerHTML = content;
+            
+            // Загрузка комментариев
+            loadComments(defectId);
+            
+            // Загрузка истории
+            loadHistory(defectId);
+            
+            // Сохранение ID дефекта для добавления комментария
+            document.getElementById('view-defect-modal').dataset.defectId = defectId;
+            
+            document.getElementById('view-defect-modal').classList.add('active');
+        }
+
+        // Загрузка комментариев
+        function loadComments(defectId) {
+            const commentsList = document.getElementById('comments-list');
+            commentsList.innerHTML = '';
+            
+            const defectComments = appData.comments
+                .filter(comment => comment.defectId === defectId)
+                .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+            
+            if (defectComments.length === 0) {
+                commentsList.innerHTML = '<p>Комментарии отсутствуют</p>';
+                return;
+            }
+            
+            defectComments.forEach(comment => {
+                const user = appData.users.find(u => u.id === comment.userId);
+                const commentElement = document.createElement('div');
+                commentElement.className = 'comment';
+                commentElement.innerHTML = `
+                    <div class="comment-header">
+                        <span class="comment-author">${user ? user.name : 'Неизвестный пользователь'}</span>
+                        <span class="comment-date">${formatDate(comment.createdAt)}</span>
+                    </div>
+                    <div class="comment-text">${comment.text}</div>
+                `;
+                commentsList.appendChild(commentElement);
+            });
+        }
+
+        // Загрузка истории изменений
+        function loadHistory(defectId) {
+            const historyList = document.getElementById('history-list');
+            historyList.innerHTML = '';
+            
+            const defectHistory = appData.history
+                .filter(record => record.defectId === defectId)
+                .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            
+            if (defectHistory.length === 0) {
+                historyList.innerHTML = '<p>История изменений отсутствует</p>';
+                return;
+            }
+            
+            defectHistory.forEach(record => {
+                const user = appData.users.find(u => u.id === record.userId);
+                const historyElement = document.createElement('div');
+                historyElement.className = 'history-item';
+                historyElement.innerHTML = `
+                    <div class="history-action">${record.action}</div>
+                    <div class="history-meta">
+                        <span class="history-user">${user ? user.name : 'Неизвестный пользователь'}</span>
+                        <span class="history-date">${formatDate(record.createdAt)}</span>
+                    </div>
+                `;
+                historyList.appendChild(historyElement);
+            });
+        }
+
+        // Добавление комментария
+        function addComment() {
+            const defectId = parseInt(document.getElementById('view-defect-modal').dataset.defectId);
+            const commentText = document.getElementById('new-comment').value.trim();
+            
+            if (!commentText) {
+                alert('Введите текст комментария');
+                return;
+            }
+            
+            const newComment = {
+                id: appData.comments.length > 0 ? Math.max(...appData.comments.map(c => c.id)) + 1 : 1,
+                defectId: defectId,
+                userId: appData.currentUser.id,
+                text: commentText,
+                createdAt: new Date().toISOString()
+            };
+            
+            appData.comments.push(newComment);
+            saveData();
+            
+            // Обновление отображения комментариев
+            loadComments(defectId);
+            
+            // Очистка поля ввода
+            document.getElementById('new-comment').value = '';
+        }
+
+        // Решение дефекта
+        function resolveDefect(defectId) {
+            const defect = appData.defects.find(d => d.id === defectId);
+            if (!defect) return;
+            
+            // В реальном приложении здесь была бы логика изменения статуса
+            // Для демонстрации просто меняем статус на "На проверке"
+            defect.status = 'in-review';
+            defect.updatedAt = new Date().toISOString();
+            
+            // Добавление записи в историю
+            const historyRecord = {
+                id: appData.history.length > 0 ? Math.max(...appData.history.map(h => h.id)) + 1 : 1,
+                defectId: defectId,
+                userId: appData.currentUser.id,
+                action: 'Статус изменен: В работе → На проверке',
+                createdAt: new Date().toISOString()
+            };
+            
+            appData.history.push(historyRecord);
+            saveData();
+            
+            // Обновление интерфейса
+            loadDefects();
+            
+            alert('Дефект переведен на проверку');
+        }
+
+        // Сохранение дефекта
+        function saveDefect() {
+            const form = document.getElementById('defect-form');
+            const defectId = form.dataset.defectId;
+            
+            const defectData = {
+                title: document.getElementById('defect-title').value,
+                description: document.getElementById('defect-description').value,
+                priority: document.getElementById('defect-priority').value,
+                projectId: parseInt(document.getElementById('defect-project').value),
+                assigneeId: parseInt(document.getElementById('defect-assignee').value),
+                dueDate: document.getElementById('defect-due-date').value
+            };
+            
+            if (!defectData.title || !defectData.description || !defectData.projectId || !defectData.assigneeId || !defectData.dueDate) {
+                alert('Заполните все обязательные поля');
+                return;
+            }
+            
+            if (defectId) {
+                // Редактирование существующего дефекта
+                const defect = appData.defects.find(d => d.id === parseInt(defectId));
+                if (defect) {
+                    Object.assign(defect, defectData);
+                    defect.updatedAt = new Date().toISOString();
+                    
+                    // Добавление записи в историю
+                    const historyRecord = {
+                        id: appData.history.length > 0 ? Math.max(...appData.history.map(h => h.id)) + 1 : 1,
+                        defectId: parseInt(defectId),
+                        userId: appData.currentUser.id,
+                        action: 'Дефект отредактирован',
+                        createdAt: new Date().toISOString()
+                    };
+                    
+                    appData.history.push(historyRecord);
+                }
+            } else {
+                // Создание нового дефекта
+                const newDefect = {
+                    id: appData.defects.length > 0 ? Math.max(...appData.defects.map(d => d.id)) + 1 : 1,
+                    ...defectData,
+                    status: 'new',
+                    reporterId: appData.currentUser.id,
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString()
+                };
+                
+                appData.defects.push(newDefect);
+            }
+            
+            saveData();
+            closeAllModals();
+            loadDefects();
+        }
+
+        // Загрузка проектов
+        function loadProjects() {
+            const projectsList = document.getElementById('projects-list');
+            projectsList.innerHTML = '';
+            
+            if (appData.projects.length === 0) {
+                projectsList.innerHTML = '<p>Проекты не найдены</p>';
+                return;
+            }
+            
+            appData.projects.forEach(project => {
+                const manager = appData.users.find(u => u.id === project.managerId);
+                const projectDefects = appData.defects.filter(d => d.projectId === project.id);
+                
+                const projectElement = document.createElement('div');
+                projectElement.className = 'defect-item';
+                projectElement.innerHTML = `
+                    <div class="defect-header">
+                        <div class="defect-title">${project.name}</div>
+                        <div class="defect-priority">
+                            ${projectDefects.length} дефектов
+                        </div>
+                    </div>
+                    <div class="defect-meta">
+                        <span>Менеджер: ${manager ? manager.name : 'Не назначен'}</span>
+                    </div>
+                    <div class="defect-description">${project.description}</div>
+                    <div class="defect-actions">
+                        <button class="btn btn-sm view-project" data-id="${project.id}">Просмотр</button>
+                        ${appData.currentUser.role === 'manager' ? `
+                            <button class="btn btn-sm edit-project" data-id="${project.id}">Редактировать</button>
+                            <button class="btn btn-sm btn-danger delete-project" data-id="${project.id}">Удалить</button>
+                        ` : ''}
+                    </div>
+                `;
+                
+                projectsList.appendChild(projectElement);
+            });
+            
+            // Добавление обработчиков событий для кнопок проектов
+            document.querySelectorAll('.view-project').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    viewProject(parseInt(this.dataset.id));
+                });
+            });
+            
+            if (appData.currentUser.role === 'manager') {
+                document.querySelectorAll('.edit-project').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        editProject(parseInt(this.dataset.id));
+                    });
+                });
+                
+                document.querySelectorAll('.delete-project').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        deleteProject(parseInt(this.dataset.id));
+                    });
+                });
+            }
+        }
+
+        // Просмотр проекта
+        function viewProject(projectId) {
+            const project = appData.projects.find(p => p.id === projectId);
+            if (!project) return;
+            
+            const manager = appData.users.find(u => u.id === project.managerId);
+            const projectDefects = appData.defects.filter(d => d.projectId === projectId);
+            
+            let content = `
+                <h3>${project.name}</h3>
+                <p><strong>Описание:</strong> ${project.description}</p>
+                <p><strong>Менеджер:</strong> ${manager ? manager.name : 'Не назначен'}</p>
+                <p><strong>Количество дефектов:</strong> ${projectDefects.length}</p>
+                
+                <h4>Дефекты проекта</h4>
+            `;
+            
+            if (projectDefects.length === 0) {
+                content += '<p>Дефекты не найдены</p>';
+            } else {
+                content += '<ul>';
+                projectDefects.forEach(defect => {
+                    content += `<li>${defect.title} (${getStatusText(defect.status)})</li>`;
+                });
+                content += '</ul>';
+            }
+            
+            alert(content);
+        }
+
+        // Показать модальное окно добавления проекта
+        function showAddProjectModal() {
+            document.getElementById('project-modal-title').textContent = 'Добавить проект';
+            document.getElementById('project-form').reset();
+            document.getElementById('project-form').dataset.projectId = '';
+            document.getElementById('project-modal').classList.add('active');
+        }
+
+        // Редактирование проекта
+        function editProject(projectId) {
+            const project = appData.projects.find(p => p.id === projectId);
+            if (!project) return;
+            
+            document.getElementById('project-modal-title').textContent = 'Редактировать проект';
+            document.getElementById('project-name').value = project.name;
+            document.getElementById('project-description').value = project.description;
+            document.getElementById('project-manager').value = project.managerId;
+            
+            document.getElementById('project-form').dataset.projectId = projectId;
+            document.getElementById('project-modal').classList.add('active');
+        }
+
+        // Удаление проекта
+        function deleteProject(projectId) {
+            if (!confirm('Вы уверены, что хотите удалить проект? Все связанные дефекты также будут удалены.')) {
+                return;
+            }
+            
+            // Удаление проекта
+            appData.projects = appData.projects.filter(p => p.id !== projectId);
+            
+            // Удаление связанных дефектов
+            appData.defects = appData.defects.filter(d => d.projectId !== projectId);
+            
+            saveData();
+            loadProjects();
+        }
+
+        // Сохранение проекта
+        function saveProject() {
+            const form = document.getElementById('project-form');
+            const projectId = form.dataset.projectId;
+            
+            const projectData = {
+                name: document.getElementById('project-name').value,
+                description: document.getElementById('project-description').value,
+                managerId: parseInt(document.getElementById('project-manager').value)
+            };
+            
+            if (!projectData.name || !projectData.managerId) {
+                alert('Заполните все обязательные поля');
+                return;
+            }
+            
+            if (projectId) {
+                // Редактирование существующего проекта
+                const project = appData.projects.find(p => p.id === parseInt(projectId));
+                if (project) {
+                    Object.assign(project, projectData);
+                }
+            } else {
+                // Создание нового проекта
+                const newProject = {
+                    id: appData.projects.length > 0 ? Math.max(...appData.projects.map(p => p.id)) + 1 : 1,
+                    ...projectData
+                };
+                
+                appData.projects.push(newProject);
+            }
+            
+            saveData();
+            closeAllModals();
+            loadProjects();
+            populateFilters(); // Обновление фильтров, так как добавился новый проект
+        }
+
+        // Загрузка отчетов
+        function loadReports() {
+            // В реальном приложении здесь была бы логика загрузки и отображения отчетов
+            // Для демонстрации просто показываем сообщение
+            console.log('Загрузка отчетов...');
+        }
+
+        // Экспорт данных
+        function exportData() {
+            // В реальном приложении здесь была бы логика экспорта данных
+            // Для демонстрации просто показываем сообщение
+            alert('Функция экспорта данных будет реализована в полной версии системы');
+        }
+
+        // Закрытие всех модальных окон
+        function closeAllModals() {
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.classList.remove('active');
+            });
+        }
+    </script>
+</body>
+</html>
