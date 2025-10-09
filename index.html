@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Система контроля дефектов на стройке</title>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-sha256/0.9.0/sha256.min.js"></script>
     <style>
         :root {
             --primary-color: #2c3e50;
@@ -611,6 +612,15 @@
             min-height: 200px;
         }
         
+        .security-info {
+            background-color: #e8f5e9;
+            border: 1px solid #c8e6c9;
+            border-radius: 4px;
+            padding: 10px;
+            margin-top: 10px;
+            font-size: 0.85rem;
+        }
+        
         @media (max-width: 768px) {
             .header-content {
                 flex-direction: column;
@@ -676,6 +686,9 @@
                     </div>
                     <button type="submit" class="btn btn-block">Войти</button>
                 </form>
+                <div class="security-info">
+                    <p><strong>Безопасность:</strong> Пароли хранятся в хешированном виде с использованием SHA-256</p>
+                </div>
                 <div style="margin-top: 1rem; text-align: center;">
                     <p>Демо-аккаунты:</p>
                     <p>Менеджер: manager / password</p>
@@ -1338,12 +1351,41 @@
                 const selectedProject = ref(null);
                 const newComment = ref('');
 
+                // Функция хеширования пароля
+                const hashPassword = (password) => {
+                    return sha256(password);
+                };
+
                 // Данные приложения
                 const users = ref([
-                    { id: 1, username: 'manager', password: 'password', role: 'manager', name: 'Алексей Петров' },
-                    { id: 2, username: 'engineer', password: 'password', role: 'engineer', name: 'Иван Сидоров' },
-                    { id: 3, username: 'observer', password: 'password', role: 'observer', name: 'Мария Иванова' },
-                    { id: 4, username: 'engineer2', password: 'password', role: 'engineer', name: 'Сергей Козлов' }
+                    { 
+                        id: 1, 
+                        username: 'manager', 
+                        passwordHash: hashPassword('password123'), 
+                        role: 'manager', 
+                        name: 'Алексей Петров' 
+                    },
+                    { 
+                        id: 2, 
+                        username: 'engineer', 
+                        passwordHash: hashPassword('password123'), 
+                        role: 'engineer', 
+                        name: 'Иван Сидоров' 
+                    },
+                    { 
+                        id: 3, 
+                        username: 'observer', 
+                        passwordHash: hashPassword('password123'), 
+                        role: 'observer', 
+                        name: 'Мария Иванова' 
+                    },
+                    { 
+                        id: 4, 
+                        username: 'engineer2', 
+                        passwordHash: hashPassword('password123'), 
+                        role: 'engineer', 
+                        name: 'Сергей Козлов' 
+                    }
                 ]);
 
                 const projects = ref([
@@ -1525,6 +1567,15 @@
                     if (defects.value.length === 0) {
                         initializeDemoData();
                     }
+                    
+                    // Если пользователи не имеют хешированных паролей, обновляем их
+                    if (users.value.length > 0 && !users.value[0].passwordHash) {
+                        users.value = users.value.map(user => ({
+                            ...user,
+                            passwordHash: hashPassword(user.password || 'password')
+                        }));
+                        saveData();
+                    }
                 };
 
                 const saveData = () => {
@@ -1631,15 +1682,20 @@
 
                 const handleLogin = () => {
                     const user = users.value.find(u => 
-                        u.username === loginForm.value.username && 
-                        u.password === loginForm.value.password
+                        u.username === loginForm.value.username
                     );
                     
                     if (user) {
-                        currentUser.value = user;
-                        localStorage.setItem('defectSystemCurrentUser', JSON.stringify(user));
-                        loginForm.value.username = '';
-                        loginForm.value.password = '';
+                        // Сравниваем хеши паролей
+                        const inputPasswordHash = hashPassword(loginForm.value.password);
+                        if (user.passwordHash === inputPasswordHash) {
+                            currentUser.value = user;
+                            localStorage.setItem('defectSystemCurrentUser', JSON.stringify(user));
+                            loginForm.value.username = '';
+                            loginForm.value.password = '';
+                        } else {
+                            alert('Неверное имя пользователя или пароль');
+                        }
                     } else {
                         alert('Неверное имя пользователя или пароль');
                     }
