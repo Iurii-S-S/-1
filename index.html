@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Система контроля дефектов на стройке</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <style>
         :root {
             --primary-color: #2c3e50;
@@ -194,14 +195,6 @@
             border-bottom-color: var(--secondary-color);
             color: var(--secondary-color);
             font-weight: 500;
-        }
-        
-        .tab-content {
-            display: none;
-        }
-        
-        .tab-content.active {
-            display: block;
         }
         
         .card {
@@ -396,8 +389,168 @@
             margin-bottom: 0;
         }
         
-        .comments-section {
+        .confirmation-modal {
+            background-color: white;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            padding: 2rem;
+        }
+        
+        .confirmation-header {
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        
+        .confirmation-title {
+            font-size: 1.25rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+        
+        .confirmation-subtitle {
+            color: #666;
+            margin-bottom: 1rem;
+        }
+        
+        .confirmation-content {
+            margin-bottom: 1.5rem;
+        }
+        
+        .confirmation-section {
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+        }
+        
+        .confirmation-section h4 {
+            margin-bottom: 0.5rem;
+            color: var(--primary-color);
+        }
+        
+        .confirmation-field {
+            display: flex;
+            margin-bottom: 0.5rem;
+        }
+        
+        .confirmation-label {
+            font-weight: 500;
+            width: 120px;
+        }
+        
+        .confirmation-value {
+            flex: 1;
+        }
+        
+        .confirmation-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        
+        .error-message {
+            color: var(--danger-color);
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            display: none;
+        }
+        
+        .error-message.show {
+            display: block;
+        }
+        
+        .project-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-left: 4px solid var(--secondary-color);
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        .stat-label {
+            color: #666;
+            margin-top: 0.5rem;
+        }
+        
+        .project-details {
+            padding: 1.5rem;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 1.5rem;
+        }
+        
+        .project-details h3 {
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+        }
+        
+        .project-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .project-field {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .project-label {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: #666;
+        }
+        
+        .project-value {
+            font-size: 1rem;
+        }
+        
+        .project-actions {
+            display: flex;
+            gap: 10px;
             margin-top: 1.5rem;
+        }
+        
+        .project-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        
+        .project-table th,
+        .project-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .project-table th {
+            background-color: #f8f9fa;
+            font-weight: 500;
+        }
+        
+        .project-table tr:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .project-table tr.selected {
+            background-color: #e3f2fd;
         }
         
         .comment {
@@ -405,46 +558,33 @@
             border-bottom: 1px solid #eee;
         }
         
-        .comment:last-child {
-            border-bottom: none;
-        }
-        
         .comment-header {
             display: flex;
             justify-content: space-between;
             margin-bottom: 0.5rem;
-        }
-        
-        .comment-author {
-            font-weight: 500;
-        }
-        
-        .comment-date {
+            font-size: 0.85rem;
             color: #666;
-            font-size: 0.8rem;
         }
         
-        .comment-form {
-            margin-top: 1rem;
-        }
-        
-        .history-section {
-            margin-top: 1.5rem;
+        .comment-text {
+            line-height: 1.5;
         }
         
         .history-item {
-            padding: 0.75rem;
+            padding: 1rem;
             border-bottom: 1px solid #eee;
-            font-size: 0.9rem;
         }
         
-        .history-item:last-child {
-            border-bottom: none;
+        .history-action {
+            font-weight: 500;
+            margin-bottom: 0.25rem;
         }
         
-        .history-date {
+        .history-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
             color: #666;
-            font-size: 0.8rem;
         }
         
         .charts-container {
@@ -455,26 +595,20 @@
         }
         
         .chart {
-            background-color: white;
+            background: white;
+            padding: 1.5rem;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            padding: 1.5rem;
         }
         
         .chart-title {
-            margin-bottom: 1rem;
             font-weight: 500;
+            margin-bottom: 1rem;
             color: var(--primary-color);
         }
         
         .chart-placeholder {
-            height: 200px;
-            background-color: #f9f9f9;
-            border-radius: 4px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: #666;
+            min-height: 200px;
         }
         
         @media (max-width: 768px) {
@@ -497,1205 +631,1435 @@
                 flex-direction: column;
                 gap: 1rem;
             }
+            
+            .confirmation-actions {
+                flex-direction: column;
+            }
+            
+            .project-stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .project-info {
+                grid-template-columns: 1fr;
+            }
+            
+            .project-actions {
+                flex-direction: column;
+            }
+            
+            .charts-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .project-table {
+                display: block;
+                overflow-x: auto;
+            }
         }
     </style>
 </head>
 <body>
-    <!-- Авторизация -->
-    <div id="auth-section" class="auth-container">
-        <div class="auth-form">
-            <h2>Вход в систему</h2>
-            <form id="login-form">
-                <div class="form-group">
-                    <label for="username">Имя пользователя</label>
-                    <input type="text" id="username" class="form-control" required>
+    <div id="app">
+        <!-- Авторизация -->
+        <div v-if="!currentUser" class="auth-container">
+            <div class="auth-form">
+                <h2>Вход в систему</h2>
+                <form @submit.prevent="handleLogin">
+                    <div class="form-group">
+                        <label for="username">Имя пользователя</label>
+                        <input type="text" id="username" v-model="loginForm.username" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Пароль</label>
+                        <input type="password" id="password" v-model="loginForm.password" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn btn-block">Войти</button>
+                </form>
+                <div style="margin-top: 1rem; text-align: center;">
+                    <p>Демо-аккаунты:</p>
+                    <p>Менеджер: manager / password</p>
+                    <p>Инженер: engineer / password</p>
+                    <p>Наблюдатель: observer / password</p>
                 </div>
-                <div class="form-group">
-                    <label for="password">Пароль</label>
-                    <input type="password" id="password" class="form-control" required>
-                </div>
-                <button type="submit" class="btn btn-block">Войти</button>
-            </form>
-            <div style="margin-top: 1rem; text-align: center;">
-                <p>Демо-аккаунты:</p>
-                <p>Менеджер: manager / password</p>
-                <p>Инженер: engineer / password</p>
-                <p>Наблюдатель: observer / password</p>
             </div>
         </div>
-    </div>
 
-    <!-- Основной интерфейс -->
-    <div id="app-section" style="display: none;">
-        <header>
-            <div class="container">
-                <div class="header-content">
-                    <div class="logo">Система контроля дефектов</div>
-                    <div class="user-info">
-                        <span id="current-user">Пользователь</span>
-                        <span id="current-role" class="user-role">Роль</span>
-                        <button id="logout-btn" class="logout-btn">Выйти</button>
+        <!-- Основной интерфейс -->
+        <div v-else>
+            <header>
+                <div class="container">
+                    <div class="header-content">
+                        <div class="logo">Система контроля дефектов</div>
+                        <div class="user-info">
+                            <span>{{ currentUser.name }}</span>
+                            <span class="user-role">{{ getRoleName(currentUser.role) }}</span>
+                            <button @click="handleLogout" class="logout-btn">Выйти</button>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </header>
+            </header>
 
-        <main class="container">
-            <div class="dashboard">
-                <div class="dashboard-header">
-                    <h1>Панель управления</h1>
-                    <button id="add-defect-btn" class="btn">Добавить дефект</button>
-                </div>
+            <main class="container">
+                <div class="dashboard">
+                    <div class="dashboard-header">
+                        <h1>Панель управления</h1>
+                        <button v-if="currentUser.role !== 'observer'" @click="showAddDefectModal" class="btn">Добавить дефект</button>
+                    </div>
 
-                <div class="tabs">
-                    <div class="tab active" data-tab="defects">Дефекты</div>
-                    <div class="tab" data-tab="projects">Проекты</div>
-                    <div class="tab" data-tab="reports">Отчеты</div>
-                </div>
+                    <div class="tabs">
+                        <div 
+                            class="tab" 
+                            :class="{ active: activeTab === 'defects' }"
+                            @click="switchTab('defects')"
+                        >
+                            Дефекты
+                        </div>
+                        <div 
+                            class="tab" 
+                            :class="{ active: activeTab === 'projects' }"
+                            @click="switchTab('projects')"
+                        >
+                            Проекты
+                        </div>
+                        <div 
+                            class="tab" 
+                            :class="{ active: activeTab === 'reports' }"
+                            @click="switchTab('reports')"
+                        >
+                            Отчеты
+                        </div>
+                    </div>
 
-                <!-- Вкладка дефектов -->
-                <div id="defects-tab" class="tab-content active">
-                    <div class="card">
-                        <div class="filters">
-                            <div class="filter-group">
-                                <label>Статус</label>
-                                <select id="status-filter" class="form-control">
-                                    <option value="">Все</option>
-                                    <option value="new">Новая</option>
-                                    <option value="in-progress">В работе</option>
-                                    <option value="in-review">На проверке</option>
-                                    <option value="closed">Закрыта</option>
-                                    <option value="cancelled">Отменена</option>
-                                </select>
+                    <!-- Вкладка дефектов -->
+                    <div v-if="activeTab === 'defects'" class="tab-content active">
+                        <div class="card">
+                            <div class="filters">
+                                <div class="filter-group">
+                                    <label>Статус</label>
+                                    <select v-model="filters.status" class="form-control">
+                                        <option value="">Все</option>
+                                        <option value="new">Новая</option>
+                                        <option value="in-progress">В работе</option>
+                                        <option value="in-review">На проверке</option>
+                                        <option value="closed">Закрыта</option>
+                                        <option value="cancelled">Отменена</option>
+                                    </select>
+                                </div>
+                                <div class="filter-group">
+                                    <label>Приоритет</label>
+                                    <select v-model="filters.priority" class="form-control">
+                                        <option value="">Все</option>
+                                        <option value="high">Высокий</option>
+                                        <option value="medium">Средний</option>
+                                        <option value="low">Низкий</option>
+                                    </select>
+                                </div>
+                                <div class="filter-group">
+                                    <label>Исполнитель</label>
+                                    <select v-model="filters.assignee" class="form-control">
+                                        <option value="">Все</option>
+                                        <option v-for="user in engineersAndManagers" :key="user.id" :value="user.id">
+                                            {{ user.name }}
+                                        </option>
+                                    </select>
+                                </div>
+                                <div class="filter-group">
+                                    <label>Проект</label>
+                                    <select v-model="filters.project" class="form-control">
+                                        <option value="">Все</option>
+                                        <option v-for="project in projects" :key="project.id" :value="project.id">
+                                            {{ project.name }}
+                                        </option>
+                                    </select>
+                                </div>
+                                <div class="filter-group">
+                                    <label>&nbsp;</label>
+                                    <button @click="applyFilters" class="btn">Применить</button>
+                                </div>
+                                <div class="filter-group">
+                                    <label>&nbsp;</label>
+                                    <button @click="exportData" class="btn">Экспорт</button>
+                                </div>
                             </div>
-                            <div class="filter-group">
-                                <label>Приоритет</label>
-                                <select id="priority-filter" class="form-control">
-                                    <option value="">Все</option>
-                                    <option value="high">Высокий</option>
-                                    <option value="medium">Средний</option>
+
+                            <div class="defects-list">
+                                <div v-if="filteredDefects.length === 0" class="defect-item">
+                                    <p>Дефекты не найдены</p>
+                                </div>
+                                <div 
+                                    v-else
+                                    v-for="defect in filteredDefects" 
+                                    :key="defect.id" 
+                                    class="defect-item"
+                                >
+                                    <div class="defect-header">
+                                        <div class="defect-title">{{ defect.title }}</div>
+                                        <div class="defect-priority" :class="`priority-${defect.priority}`">
+                                            {{ getPriorityText(defect.priority) }}
+                                        </div>
+                                    </div>
+                                    <div class="defect-meta">
+                                        <span>Проект: {{ getProjectName(defect.projectId) }}</span>
+                                        <span>Исполнитель: {{ getUserName(defect.assigneeId) }}</span>
+                                        <span>Срок: {{ formatDate(defect.dueDate) }}</span>
+                                    </div>
+                                    <div class="defect-description">{{ defect.description }}</div>
+                                    <div class="defect-footer">
+                                        <span class="defect-status" :class="`status-${defect.status}`">
+                                            {{ getStatusText(defect.status) }}
+                                        </span>
+                                        <div class="defect-actions">
+                                            <button @click="viewDefect(defect.id)" class="btn btn-sm">Просмотр</button>
+                                            <button 
+                                                v-if="currentUser.role !== 'observer' && canEditDefect(defect)"
+                                                @click="editDefect(defect.id)" 
+                                                class="btn btn-sm"
+                                            >
+                                                Редактировать
+                                            </button>
+                                            <button 
+                                                v-if="currentUser.role !== 'observer' && defect.status !== 'closed' && defect.status !== 'cancelled'"
+                                                @click="resolveDefect(defect.id)" 
+                                                class="btn btn-sm btn-success"
+                                            >
+                                                Решить
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Вкладка проектов -->
+                    <div v-if="activeTab === 'projects'" class="tab-content active">
+                        <div class="card">
+                            <div class="card-header">
+                                <h2>Управление проектами</h2>
+                                <button 
+                                    v-if="currentUser.role === 'manager'" 
+                                    @click="showAddProjectModal" 
+                                    class="btn"
+                                >
+                                    Добавить проект
+                                </button>
+                            </div>
+                            
+                            <!-- Статистика проектов -->
+                            <div class="project-stats">
+                                <div class="stat-card">
+                                    <div class="stat-value">{{ totalDefects }}</div>
+                                    <div class="stat-label">Всего дефектов</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-value">{{ activeDefects }}</div>
+                                    <div class="stat-label">Активных дефектов</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-value">{{ projects.length }}</div>
+                                    <div class="stat-label">Проектов в работе</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-value">{{ highPriorityDefects }}</div>
+                                    <div class="stat-label">Высокий приоритет</div>
+                                </div>
+                            </div>
+
+                            <!-- Детальная информация о проекте -->
+                            <div v-if="selectedProject" class="project-details">
+                                <h3>{{ selectedProject.name }}</h3>
+                                <div class="project-info">
+                                    <div class="project-field">
+                                        <span class="project-label">Менеджер</span>
+                                        <span class="project-value">{{ getUserName(selectedProject.managerId) }}</span>
+                                    </div>
+                                    <div class="project-field">
+                                        <span class="project-label">Тип</span>
+                                        <span class="project-value">{{ getProjectType(selectedProject.type) }}</span>
+                                    </div>
+                                    <div class="project-field">
+                                        <span class="project-label">Статус</span>
+                                        <span class="project-value">{{ getProjectStatus(selectedProject.status) }}</span>
+                                    </div>
+                                </div>
+                                <div class="project-field">
+                                    <span class="project-label">Описание</span>
+                                    <span class="project-value">{{ selectedProject.description }}</span>
+                                </div>
+                                <div class="project-actions">
+                                    <button @click="viewProjectDetails(selectedProject.id)" class="btn">Просмотр</button>
+                                    <button 
+                                        v-if="currentUser.role === 'manager'"
+                                        @click="editProject(selectedProject.id)" 
+                                        class="btn"
+                                    >
+                                        Редактировать
+                                    </button>
+                                    <button 
+                                        v-if="currentUser.role === 'manager'"
+                                        @click="deleteProject(selectedProject.id)" 
+                                        class="btn btn-danger"
+                                    >
+                                        Удалить
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Таблица проектов -->
+                            <div class="projects-list">
+                                <table class="project-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Название</th>
+                                            <th>Менеджер</th>
+                                            <th>Тип</th>
+                                            <th>Статус</th>
+                                            <th>Кол-во дефектов</th>
+                                            <th>Действия</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-if="projects.length === 0">
+                                            <td colspan="6" style="text-align: center;">Проекты не найдены</td>
+                                        </tr>
+                                        <tr 
+                                            v-else
+                                            v-for="project in projects" 
+                                            :key="project.id"
+                                            @click="selectProject(project)"
+                                            :class="{ 'selected': selectedProject && selectedProject.id === project.id }"
+                                        >
+                                            <td>{{ project.name }}</td>
+                                            <td>{{ getUserName(project.managerId) }}</td>
+                                            <td>{{ getProjectType(project.type) }}</td>
+                                            <td>{{ getProjectStatus(project.status) }}</td>
+                                            <td>{{ getDefectsCountByProject(project.id) }}</td>
+                                            <td>
+                                                <div class="defect-actions">
+                                                    <button @click="viewProjectDetails(project.id)" class="btn btn-sm">Просмотр</button>
+                                                    <button 
+                                                        v-if="currentUser.role === 'manager'"
+                                                        @click="editProject(project.id)" 
+                                                        class="btn btn-sm"
+                                                    >
+                                                        Редактировать
+                                                    </button>
+                                                    <button 
+                                                        v-if="currentUser.role === 'manager'"
+                                                        @click="deleteProject(project.id)" 
+                                                        class="btn btn-sm btn-danger"
+                                                    >
+                                                        Удалить
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Вкладка отчетов -->
+                    <div v-if="activeTab === 'reports'" class="tab-content active">
+                        <div class="card">
+                            <h2>Аналитические отчеты</h2>
+                            <div class="project-stats">
+                                <div class="stat-card">
+                                    <div class="stat-value">{{ defectsByStatus.new || 0 }}</div>
+                                    <div class="stat-label">Новые дефекты</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-value">{{ defectsByStatus['in-progress'] || 0 }}</div>
+                                    <div class="stat-label">В работе</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-value">{{ defectsByStatus['in-review'] || 0 }}</div>
+                                    <div class="stat-label">На проверке</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-value">{{ defectsByStatus.closed || 0 }}</div>
+                                    <div class="stat-label">Закрыто</div>
+                                </div>
+                            </div>
+                            
+                            <div class="charts-container">
+                                <div class="chart">
+                                    <div class="chart-title">Дефекты по проектам</div>
+                                    <div class="chart-placeholder">
+                                        <div v-for="project in projects" :key="project.id" style="margin-bottom: 10px;">
+                                            <div style="display: flex; justify-content: space-between;">
+                                                <span>{{ project.name }}</span>
+                                                <span>{{ getDefectsCountByProject(project.id) }}</span>
+                                            </div>
+                                            <div style="height: 8px; background: #f0f0f0; border-radius: 4px; margin-top: 5px;">
+                                                <div :style="{ 
+                                                    width: (getDefectsCountByProject(project.id) / Math.max(...projects.map(p => getDefectsCountByProject(p.id))) * 100 + '%'), 
+                                                    height: '100%', 
+                                                    background: '#3498db', 
+                                                    borderRadius: '4px' 
+                                                }"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="chart">
+                                    <div class="chart-title">Дефекты по приоритетам</div>
+                                    <div class="chart-placeholder">
+                                        <div style="margin-bottom: 10px;">
+                                            <div style="display: flex; justify-content: space-between;">
+                                                <span>Высокий</span>
+                                                <span>{{ defectsByPriority.high || 0 }}</span>
+                                            </div>
+                                            <div style="height: 8px; background: #f0f0f0; border-radius: 4px; margin-top: 5px;">
+                                                <div :style="{ 
+                                                    width: ((defectsByPriority.high || 0) / totalDefects * 100) + '%', 
+                                                    height: '100%', 
+                                                    background: '#e74c3c', 
+                                                    borderRadius: '4px' 
+                                                }"></div>
+                                            </div>
+                                        </div>
+                                        <div style="margin-bottom: 10px;">
+                                            <div style="display: flex; justify-content: space-between;">
+                                                <span>Средний</span>
+                                                <span>{{ defectsByPriority.medium || 0 }}</span>
+                                            </div>
+                                            <div style="height: 8px; background: #f0f0f0; border-radius: 4px; margin-top: 5px;">
+                                                <div :style="{ 
+                                                    width: ((defectsByPriority.medium || 0) / totalDefects * 100) + '%', 
+                                                    height: '100%', 
+                                                    background: '#f39c12', 
+                                                    borderRadius: '4px' 
+                                                }"></div>
+                                            </div>
+                                        </div>
+                                        <div style="margin-bottom: 10px;">
+                                            <div style="display: flex; justify-content: space-between;">
+                                                <span>Низкий</span>
+                                                <span>{{ defectsByPriority.low || 0 }}</span>
+                                            </div>
+                                            <div style="height: 8px; background: #f0f0f0; border-radius: 4px; margin-top: 5px;">
+                                                <div :style="{ 
+                                                    width: ((defectsByPriority.low || 0) / totalDefects * 100) + '%', 
+                                                    height: '100%', 
+                                                    background: '#27ae60', 
+                                                    borderRadius: '4px' 
+                                                }"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <!-- Модальное окно добавления/редактирования дефекта -->
+        <div v-if="showDefectModal" class="modal active">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>{{ defectForm.id ? 'Редактировать дефект' : 'Добавить дефект' }}</h3>
+                    <button @click="closeModals" class="close-btn">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form @submit.prevent="validateAndConfirmDefect">
+                        <div class="form-group">
+                            <label for="defect-title">Заголовок *</label>
+                            <input type="text" id="defect-title" v-model="defectForm.title" class="form-control" required>
+                            <div class="error-message" :class="{ show: validationErrors.title }">
+                                {{ validationErrors.title }}
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="defect-description">Описание *</label>
+                            <textarea id="defect-description" v-model="defectForm.description" class="form-control" rows="4" required></textarea>
+                            <div class="error-message" :class="{ show: validationErrors.description }">
+                                {{ validationErrors.description }}
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="defect-priority">Приоритет *</label>
+                                <select id="defect-priority" v-model="defectForm.priority" class="form-control" required>
                                     <option value="low">Низкий</option>
+                                    <option value="medium">Средний</option>
+                                    <option value="high">Высокий</option>
                                 </select>
                             </div>
-                            <div class="filter-group">
-                                <label>Исполнитель</label>
-                                <select id="assignee-filter" class="form-control">
-                                    <option value="">Все</option>
+                            <div class="form-group">
+                                <label for="defect-project">Проект *</label>
+                                <select id="defect-project" v-model="defectForm.projectId" class="form-control" required>
+                                    <option value="">Выберите проект</option>
+                                    <option v-for="project in projects" :key="project.id" :value="project.id">
+                                        {{ project.name }}
+                                    </option>
                                 </select>
+                                <div class="error-message" :class="{ show: validationErrors.projectId }">
+                                    {{ validationErrors.projectId }}
+                                </div>
                             </div>
-                            <div class="filter-group">
-                                <label>Проект</label>
-                                <select id="project-filter" class="form-control">
-                                    <option value="">Все</option>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="defect-assignee">Исполнитель *</label>
+                                <select id="defect-assignee" v-model="defectForm.assigneeId" class="form-control" required>
+                                    <option value="">Выберите исполнителя</option>
+                                    <option v-for="user in engineersAndManagers" :key="user.id" :value="user.id">
+                                        {{ user.name }}
+                                    </option>
                                 </select>
+                                <div class="error-message" :class="{ show: validationErrors.assigneeId }">
+                                    {{ validationErrors.assigneeId }}
+                                </div>
                             </div>
-                            <div class="filter-group">
-                                <label>&nbsp;</label>
-                                <button id="apply-filters" class="btn">Применить</button>
-                            </div>
-                            <div class="filter-group">
-                                <label>&nbsp;</label>
-                                <button id="export-btn" class="btn">Экспорт</button>
+                            <div class="form-group">
+                                <label for="defect-due-date">Срок выполнения *</label>
+                                <input type="date" id="defect-due-date" v-model="defectForm.dueDate" class="form-control" required>
+                                <div class="error-message" :class="{ show: validationErrors.dueDate }">
+                                    {{ validationErrors.dueDate }}
+                                </div>
                             </div>
                         </div>
-
-                        <div id="defects-list" class="defects-list">
-                            <!-- Список дефектов будет здесь -->
+                        <div class="form-group">
+                            <label for="defect-attachments">Вложения</label>
+                            <input type="file" id="defect-attachments" class="form-control" multiple>
                         </div>
-                    </div>
+                    </form>
                 </div>
-
-                <!-- Вкладка проектов -->
-                <div id="projects-tab" class="tab-content">
-                    <div class="card">
-                        <div class="card-header">
-                            <h2>Управление проектами</h2>
-                            <button id="add-project-btn" class="btn">Добавить проект</button>
-                        </div>
-                        <div id="projects-list">
-                            <!-- Список проектов будет здесь -->
-                        </div>
-                    </div>
+                <div class="modal-footer">
+                    <button @click="closeModals" class="btn">Отмена</button>
+                    <button @click="validateAndConfirmDefect" class="btn btn-success">Сохранить</button>
                 </div>
-
-                <!-- Вкладка отчетов -->
-                <div id="reports-tab" class="tab-content">
-                    <div class="card">
-                        <h2>Аналитические отчеты</h2>
-                        <div class="charts-container">
-                            <div class="chart">
-                                <div class="chart-title">Статусы дефектов</div>
-                                <div class="chart-placeholder">График статусов дефектов</div>
-                            </div>
-                            <div class="chart">
-                                <div class="chart-title">Дефекты по приоритетам</div>
-                                <div class="chart-placeholder">График дефектов по приоритетам</div>
-                            </div>
-                            <div class="chart">
-                                <div class="chart-title">Дефекты по исполнителям</div>
-                                <div class="chart-placeholder">График дефектов по исполнителям</div>
-                            </div>
-                            <div class="chart">
-                                <div class="chart-title">Дефекты по проектам</div>
-                                <div class="chart-placeholder">График дефектов по проектам</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </main>
-    </div>
-
-    <!-- Модальное окно добавления/редактирования дефекта -->
-    <div id="defect-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="defect-modal-title">Добавить дефект</h3>
-                <button class="close-btn">&times;</button>
-            </div>
-            <div class="modal-body">
-                <form id="defect-form">
-                    <div class="form-group">
-                        <label for="defect-title">Заголовок</label>
-                        <input type="text" id="defect-title" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="defect-description">Описание</label>
-                        <textarea id="defect-description" class="form-control" rows="4" required></textarea>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="defect-priority">Приоритет</label>
-                            <select id="defect-priority" class="form-control" required>
-                                <option value="low">Низкий</option>
-                                <option value="medium">Средний</option>
-                                <option value="high">Высокий</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="defect-project">Проект</label>
-                            <select id="defect-project" class="form-control" required>
-                                <option value="">Выберите проект</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="defect-assignee">Исполнитель</label>
-                            <select id="defect-assignee" class="form-control" required>
-                                <option value="">Выберите исполнителя</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="defect-due-date">Срок выполнения</label>
-                            <input type="date" id="defect-due-date" class="form-control" required>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="defect-attachments">Вложения</label>
-                        <input type="file" id="defect-attachments" class="form-control" multiple>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button class="btn" id="cancel-defect-btn">Отмена</button>
-                <button class="btn btn-success" id="save-defect-btn">Сохранить</button>
             </div>
         </div>
-    </div>
 
-    <!-- Модальное окно просмотра дефекта -->
-    <div id="view-defect-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="view-defect-title">Дефект</h3>
-                <button class="close-btn">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div id="view-defect-content">
-                    <!-- Содержимое дефекта будет здесь -->
+        <!-- Модальное окно подтверждения создания дефекта -->
+        <div v-if="showConfirmationModal" class="modal active">
+            <div class="confirmation-modal">
+                <div class="confirmation-header">
+                    <div class="confirmation-title">Подтвердите действие на 127.0.0.1:5500</div>
+                    <div class="confirmation-subtitle">Все обязательные поля заполнены</div>
                 </div>
                 
-                <div class="comments-section">
-                    <h4>Комментарии</h4>
-                    <div id="comments-list">
-                        <!-- Список комментариев будет здесь -->
+                <div class="confirmation-content">
+                    <div class="confirmation-section">
+                        <h4>Основная информация</h4>
+                        <div class="confirmation-field">
+                            <div class="confirmation-label">Заголовок:</div>
+                            <div class="confirmation-value">{{ defectForm.title }}</div>
+                        </div>
+                        <div class="confirmation-field">
+                            <div class="confirmation-label">Описание:</div>
+                            <div class="confirmation-value">{{ defectForm.description }}</div>
+                        </div>
                     </div>
-                    <div class="comment-form">
-                        <textarea id="new-comment" class="form-control" rows="3" placeholder="Добавить комментарий"></textarea>
-                        <button id="add-comment-btn" class="btn" style="margin-top: 10px;">Добавить комментарий</button>
+                    
+                    <div class="confirmation-section">
+                        <h4>Детали</h4>
+                        <div class="confirmation-field">
+                            <div class="confirmation-label">Приоритет:</div>
+                            <div class="confirmation-value">{{ getPriorityText(defectForm.priority) }}</div>
+                        </div>
+                        <div class="confirmation-field">
+                            <div class="confirmation-label">Исполнитель:</div>
+                            <div class="confirmation-value">{{ getUserName(defectForm.assigneeId) }}</div>
+                        </div>
+                        <div class="confirmation-field">
+                            <div class="confirmation-label">Вложения:</div>
+                            <div class="confirmation-value">11.jpeg</div>
+                        </div>
+                    </div>
+                    
+                    <div class="confirmation-section">
+                        <h4>Проект</h4>
+                        <div class="confirmation-field">
+                            <div class="confirmation-label">Проект:</div>
+                            <div class="confirmation-value">{{ getProjectName(defectForm.projectId) }}</div>
+                        </div>
+                        <div class="confirmation-field">
+                            <div class="confirmation-label">Срок выполнения:</div>
+                            <div class="confirmation-value">{{ formatDate(defectForm.dueDate) }}</div>
+                        </div>
                     </div>
                 </div>
                 
-                <div class="history-section">
-                    <h4>История изменений</h4>
-                    <div id="history-list">
-                        <!-- История изменений будет здесь -->
-                    </div>
+                <div class="confirmation-actions">
+                    <button @click="closeModals" class="btn">Отмена</button>
+                    <button @click="saveDefect" class="btn btn-success">Сохранить</button>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button class="btn" id="close-view-modal-btn">Закрыть</button>
+        </div>
+
+        <!-- Модальное окно просмотра дефекта -->
+        <div v-if="showViewDefectModal" class="modal active">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>{{ selectedDefect?.title }}</h3>
+                    <button @click="closeModals" class="close-btn">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div v-if="selectedDefect" class="defect-details">
+                        <p><strong>Описание:</strong> {{ selectedDefect.description }}</p>
+                        <div class="defect-meta">
+                            <p><strong>Проект:</strong> {{ getProjectName(selectedDefect.projectId) }}</p>
+                            <p><strong>Исполнитель:</strong> {{ getUserName(selectedDefect.assigneeId) }}</p>
+                            <p><strong>Автор:</strong> {{ getUserName(selectedDefect.reporterId) }}</p>
+                            <p><strong>Приоритет:</strong> 
+                                <span class="defect-priority" :class="`priority-${selectedDefect.priority}`">
+                                    {{ getPriorityText(selectedDefect.priority) }}
+                                </span>
+                            </p>
+                            <p><strong>Статус:</strong> 
+                                <span class="defect-status" :class="`status-${selectedDefect.status}`">
+                                    {{ getStatusText(selectedDefect.status) }}
+                                </span>
+                            </p>
+                            <p><strong>Срок выполнения:</strong> {{ formatDate(selectedDefect.dueDate) }}</p>
+                            <p><strong>Дата создания:</strong> {{ formatDate(selectedDefect.createdAt) }}</p>
+                            <p><strong>Последнее обновление:</strong> {{ formatDate(selectedDefect.updatedAt) }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="comments-section">
+                        <h4>Комментарии</h4>
+                        <div v-if="defectComments.length === 0">
+                            <p>Комментарии отсутствуют</p>
+                        </div>
+                        <div v-else>
+                            <div v-for="comment in defectComments" :key="comment.id" class="comment">
+                                <div class="comment-header">
+                                    <span class="comment-author">{{ getUserName(comment.userId) }}</span>
+                                    <span class="comment-date">{{ formatDate(comment.createdAt) }}</span>
+                                </div>
+                                <div class="comment-text">{{ comment.text }}</div>
+                            </div>
+                        </div>
+                        <div class="comment-form">
+                            <textarea v-model="newComment" class="form-control" rows="3" placeholder="Добавить комментарий"></textarea>
+                            <button @click="addComment" class="btn" style="margin-top: 10px;">Добавить комментарий</button>
+                        </div>
+                    </div>
+                    
+                    <div class="history-section">
+                        <h4>История изменений</h4>
+                        <div v-if="defectHistory.length === 0">
+                            <p>История изменений отсутствует</p>
+                        </div>
+                        <div v-else>
+                            <div v-for="record in defectHistory" :key="record.id" class="history-item">
+                                <div class="history-action">{{ record.action }}</div>
+                                <div class="history-meta">
+                                    <span class="history-user">{{ getUserName(record.userId) }}</span>
+                                    <span class="history-date">{{ formatDate(record.createdAt) }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button @click="closeModals" class="btn">Закрыть</button>
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- Модальное окно проекта -->
-    <div id="project-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="project-modal-title">Добавить проект</h3>
-                <button class="close-btn">&times;</button>
-            </div>
-            <div class="modal-body">
-                <form id="project-form">
-                    <div class="form-group">
-                        <label for="project-name">Название проекта</label>
-                        <input type="text" id="project-name" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="project-description">Описание</label>
-                        <textarea id="project-description" class="form-control" rows="4"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label for="project-manager">Менеджер проекта</label>
-                        <select id="project-manager" class="form-control" required>
-                            <option value="">Выберите менеджера</option>
-                        </select>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button class="btn" id="cancel-project-btn">Отмена</button>
-                <button class="btn btn-success" id="save-project-btn">Сохранить</button>
+        <!-- Модальное окно проекта -->
+        <div v-if="showProjectModal" class="modal active">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>{{ projectForm.id ? 'Редактировать проект' : 'Добавить проект' }}</h3>
+                    <button @click="closeModals" class="close-btn">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form @submit.prevent="saveProject">
+                        <div class="form-group">
+                            <label for="project-name">Название проекта</label>
+                            <input type="text" id="project-name" v-model="projectForm.name" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="project-description">Описание</label>
+                            <textarea id="project-description" v-model="projectForm.description" class="form-control" rows="4"></textarea>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="project-type">Тип проекта</label>
+                                <select id="project-type" v-model="projectForm.type" class="form-control" required>
+                                    <option value="commercial">Коммерческий</option>
+                                    <option value="residential">Жилой</option>
+                                    <option value="industrial">Промышленный</option>
+                                    <option value="infrastructure">Инфраструктурный</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="project-status">Статус проекта</label>
+                                <select id="project-status" v-model="projectForm.status" class="form-control" required>
+                                    <option value="planning">Планирование</option>
+                                    <option value="active">Активный</option>
+                                    <option value="on-hold">Приостановлен</option>
+                                    <option value="completed">Завершен</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="project-manager">Менеджер проекта</label>
+                            <select id="project-manager" v-model="projectForm.managerId" class="form-control" required>
+                                <option value="">Выберите менеджера</option>
+                                <option v-for="user in managers" :key="user.id" :value="user.id">
+                                    {{ user.name }}
+                                </option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button @click="closeModals" class="btn">Отмена</button>
+                    <button @click="saveProject" class="btn btn-success">Сохранить</button>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        // Данные приложения
-        const appData = {
-            currentUser: null,
-            users: [
-                { id: 1, username: 'manager', password: 'password', role: 'manager', name: 'Алексей Петров' },
-                { id: 2, username: 'engineer', password: 'password', role: 'engineer', name: 'Иван Сидоров' },
-                { id: 3, username: 'observer', password: 'password', role: 'observer', name: 'Мария Иванова' },
-                { id: 4, username: 'engineer2', password: 'password', role: 'engineer', name: 'Сергей Козлов' }
-            ],
-            projects: [],
-            defects: [],
-            comments: [],
-            history: []
-        };
+        const { createApp, ref, computed, onMounted } = Vue;
 
-        // Инициализация приложения
-        document.addEventListener('DOMContentLoaded', function() {
-            // Загрузка данных из Local Storage
-            loadData();
-            
-            // Настройка обработчиков событий
-            setupEventListeners();
-            
-            // Проверка авторизации
-            checkAuth();
-        });
+        createApp({
+            setup() {
+                // Состояние приложения
+                const currentUser = ref(null);
+                const activeTab = ref('defects');
+                const showDefectModal = ref(false);
+                const showViewDefectModal = ref(false);
+                const showProjectModal = ref(false);
+                const showConfirmationModal = ref(false);
+                const selectedDefect = ref(null);
+                const selectedProject = ref(null);
+                const newComment = ref('');
 
-        // Загрузка данных из Local Storage
-        function loadData() {
-            const storedUsers = localStorage.getItem('defectSystemUsers');
-            const storedProjects = localStorage.getItem('defectSystemProjects');
-            const storedDefects = localStorage.getItem('defectSystemDefects');
-            const storedComments = localStorage.getItem('defectSystemComments');
-            const storedHistory = localStorage.getItem('defectSystemHistory');
-            
-            if (storedUsers) appData.users = JSON.parse(storedUsers);
-            if (storedProjects) appData.projects = JSON.parse(storedProjects);
-            if (storedDefects) appData.defects = JSON.parse(storedDefects);
-            if (storedComments) appData.comments = JSON.parse(storedComments);
-            if (storedHistory) appData.history = JSON.parse(storedHistory);
-            
-            // Если проектов нет, создаем демо-данные
-            if (appData.projects.length === 0) {
-                initializeDemoData();
-            }
-        }
+                // Данные приложения
+                const users = ref([
+                    { id: 1, username: 'manager', password: 'password', role: 'manager', name: 'Алексей Петров' },
+                    { id: 2, username: 'engineer', password: 'password', role: 'engineer', name: 'Иван Сидоров' },
+                    { id: 3, username: 'observer', password: 'password', role: 'observer', name: 'Мария Иванова' },
+                    { id: 4, username: 'engineer2', password: 'password', role: 'engineer', name: 'Сергей Козлов' }
+                ]);
 
-        // Сохранение данных в Local Storage
-        function saveData() {
-            localStorage.setItem('defectSystemUsers', JSON.stringify(appData.users));
-            localStorage.setItem('defectSystemProjects', JSON.stringify(appData.projects));
-            localStorage.setItem('defectSystemDefects', JSON.stringify(appData.defects));
-            localStorage.setItem('defectSystemComments', JSON.stringify(appData.comments));
-            localStorage.setItem('defectSystemHistory', JSON.stringify(appData.history));
-        }
-
-        // Инициализация демо-данных
-        function initializeDemoData() {
-            // Проекты
-            appData.projects = [
-                { id: 1, name: 'ЖК "Северный"', description: 'Многоэтажный жилой комплекс', managerId: 1 },
-                { id: 2, name: 'Торговый центр "Восток"', description: 'Торгово-развлекательный центр', managerId: 1 },
-                { id: 3, name: 'Офисное здание "Центр"', description: 'Бизнес-центр класса А', managerId: 1 }
-            ];
-            
-            // Дефекты
-            appData.defects = [
-                { 
-                    id: 1, 
-                    title: 'Трещина в несущей стене', 
-                    description: 'Обнаружена трещина шириной 2 мм в несущей стене на 3 этаже', 
-                    priority: 'high', 
-                    status: 'new',
-                    projectId: 1,
-                    assigneeId: 2,
-                    reporterId: 3,
-                    dueDate: '2023-12-15',
-                    createdAt: new Date('2023-11-01').toISOString(),
-                    updatedAt: new Date('2023-11-01').toISOString()
-                },
-                { 
-                    id: 2, 
-                    title: 'Протечка в системе отопления', 
-                    description: 'Протечка в стояке отопления на 5 этаже', 
-                    priority: 'high', 
-                    status: 'in-progress',
-                    projectId: 1,
-                    assigneeId: 4,
-                    reporterId: 1,
-                    dueDate: '2023-11-20',
-                    createdAt: new Date('2023-10-28').toISOString(),
-                    updatedAt: new Date('2023-11-05').toISOString()
-                },
-                { 
-                    id: 3, 
-                    title: 'Неровности в отделке потолка', 
-                    description: 'Заметные неровности на потолке в коридоре 2 этажа', 
-                    priority: 'medium', 
-                    status: 'in-review',
-                    projectId: 2,
-                    assigneeId: 2,
-                    reporterId: 3,
-                    dueDate: '2023-11-25',
-                    createdAt: new Date('2023-10-25').toISOString(),
-                    updatedAt: new Date('2023-11-10').toISOString()
-                },
-                { 
-                    id: 4, 
-                    title: 'Неисправность лифта', 
-                    description: 'Лифт №2 периодически останавливается между этажами', 
-                    priority: 'high', 
-                    status: 'closed',
-                    projectId: 3,
-                    assigneeId: 4,
-                    reporterId: 1,
-                    dueDate: '2023-11-10',
-                    createdAt: new Date('2023-10-20').toISOString(),
-                    updatedAt: new Date('2023-11-05').toISOString()
-                }
-            ];
-            
-            // Комментарии
-            appData.comments = [
-                { id: 1, defectId: 2, userId: 2, text: 'Начал работу по устранению протечки', createdAt: new Date('2023-11-05').toISOString() },
-                { id: 2, defectId: 2, userId: 1, text: 'Прошу ускорить работы', createdAt: new Date('2023-11-06').toISOString() },
-                { id: 3, defectId: 3, userId: 2, text: 'Выполнил выравнивание потолка', createdAt: new Date('2023-11-10').toISOString() },
-                { id: 4, defectId: 3, userId: 3, text: 'Проверил качество работ, все отлично', createdAt: new Date('2023-11-11').toISOString() }
-            ];
-            
-            // История изменений
-            appData.history = [
-                { id: 1, defectId: 2, userId: 2, action: 'Статус изменен: Новая → В работе', createdAt: new Date('2023-11-05').toISOString() },
-                { id: 2, defectId: 3, userId: 2, action: 'Статус изменен: В работе → На проверке', createdAt: new Date('2023-11-10').toISOString() },
-                { id: 3, defectId: 4, userId: 1, action: 'Статус изменен: На проверке → Закрыта', createdAt: new Date('2023-11-05').toISOString() }
-            ];
-            
-            saveData();
-        }
-
-        // Настройка обработчиков событий
-        function setupEventListeners() {
-            // Форма авторизации
-            document.getElementById('login-form').addEventListener('submit', handleLogin);
-            
-            // Кнопка выхода
-            document.getElementById('logout-btn').addEventListener('click', handleLogout);
-            
-            // Вкладки
-            document.querySelectorAll('.tab').forEach(tab => {
-                tab.addEventListener('click', function() {
-                    switchTab(this.dataset.tab);
-                });
-            });
-            
-            // Кнопка добавления дефекта
-            document.getElementById('add-defect-btn').addEventListener('click', showAddDefectModal);
-            
-            // Кнопка добавления проекта
-            document.getElementById('add-project-btn').addEventListener('click', showAddProjectModal);
-            
-            // Модальные окна
-            document.querySelectorAll('.close-btn').forEach(btn => {
-                btn.addEventListener('click', closeAllModals);
-            });
-            
-            document.getElementById('cancel-defect-btn').addEventListener('click', closeAllModals);
-            document.getElementById('cancel-project-btn').addEventListener('click', closeAllModals);
-            document.getElementById('close-view-modal-btn').addEventListener('click', closeAllModals);
-            
-            // Сохранение дефекта
-            document.getElementById('save-defect-btn').addEventListener('click', saveDefect);
-            
-            // Сохранение проекта
-            document.getElementById('save-project-btn').addEventListener('click', saveProject);
-            
-            // Фильтры
-            document.getElementById('apply-filters').addEventListener('click', applyFilters);
-            
-            // Экспорт
-            document.getElementById('export-btn').addEventListener('click', exportData);
-            
-            // Добавление комментария
-            document.getElementById('add-comment-btn').addEventListener('click', addComment);
-        }
-
-        // Проверка авторизации
-        function checkAuth() {
-            const currentUser = localStorage.getItem('defectSystemCurrentUser');
-            if (currentUser) {
-                appData.currentUser = JSON.parse(currentUser);
-                showApp();
-            } else {
-                showAuth();
-            }
-        }
-
-        // Показать экран авторизации
-        function showAuth() {
-            document.getElementById('auth-section').style.display = 'flex';
-            document.getElementById('app-section').style.display = 'none';
-        }
-
-        // Показать основное приложение
-        function showApp() {
-            document.getElementById('auth-section').style.display = 'none';
-            document.getElementById('app-section').style.display = 'block';
-            
-            // Обновление информации о пользователе
-            document.getElementById('current-user').textContent = appData.currentUser.name;
-            document.getElementById('current-role').textContent = getRoleName(appData.currentUser.role);
-            
-            // Настройка интерфейса в зависимости от роли
-            setupUIForRole();
-            
-            // Загрузка данных интерфейса
-            loadUI();
-        }
-
-        // Получить название роли
-        function getRoleName(role) {
-            const roles = {
-                'manager': 'Менеджер',
-                'engineer': 'Инженер',
-                'observer': 'Наблюдатель'
-            };
-            return roles[role] || role;
-        }
-
-        // Настройка интерфейса в зависимости от роли
-        function setupUIForRole() {
-            const role = appData.currentUser.role;
-            const addDefectBtn = document.getElementById('add-defect-btn');
-            const addProjectBtn = document.getElementById('add-project-btn');
-            
-            if (role === 'observer') {
-                addDefectBtn.style.display = 'none';
-                addProjectBtn.style.display = 'none';
-            } else if (role === 'engineer') {
-                addProjectBtn.style.display = 'none';
-            }
-        }
-
-        // Обработка авторизации
-        function handleLogin(e) {
-            e.preventDefault();
-            
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            
-            const user = appData.users.find(u => u.username === username && u.password === password);
-            
-            if (user) {
-                appData.currentUser = user;
-                localStorage.setItem('defectSystemCurrentUser', JSON.stringify(user));
-                showApp();
-            } else {
-                alert('Неверное имя пользователя или пароль');
-            }
-        }
-
-        // Обработка выхода
-        function handleLogout() {
-            appData.currentUser = null;
-            localStorage.removeItem('defectSystemCurrentUser');
-            showAuth();
-        }
-
-        // Переключение вкладок
-        function switchTab(tabName) {
-            // Сброс активных вкладок
-            document.querySelectorAll('.tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            
-            document.querySelectorAll('.tab-content').forEach(content => {
-                content.classList.remove('active');
-            });
-            
-            // Активация выбранной вкладки
-            document.querySelector(`.tab[data-tab="${tabName}"]`).classList.add('active');
-            document.getElementById(`${tabName}-tab`).classList.add('active');
-            
-            // Загрузка данных для вкладки
-            if (tabName === 'defects') {
-                loadDefects();
-            } else if (tabName === 'projects') {
-                loadProjects();
-            } else if (tabName === 'reports') {
-                loadReports();
-            }
-        }
-
-        // Загрузка интерфейса
-        function loadUI() {
-            loadDefects();
-            populateFilters();
-        }
-
-        // Загрузка списка дефектов
-        function loadDefects() {
-            const defectsList = document.getElementById('defects-list');
-            defectsList.innerHTML = '';
-            
-            // Фильтрация дефектов в зависимости от роли
-            let filteredDefects = [...appData.defects];
-            
-            if (appData.currentUser.role === 'engineer') {
-                filteredDefects = filteredDefects.filter(defect => 
-                    defect.assigneeId === appData.currentUser.id || 
-                    defect.reporterId === appData.currentUser.id
-                );
-            }
-            
-            // Применение дополнительных фильтров
-            const statusFilter = document.getElementById('status-filter').value;
-            const priorityFilter = document.getElementById('priority-filter').value;
-            const assigneeFilter = document.getElementById('assignee-filter').value;
-            const projectFilter = document.getElementById('project-filter').value;
-            
-            if (statusFilter) {
-                filteredDefects = filteredDefects.filter(defect => defect.status === statusFilter);
-            }
-            
-            if (priorityFilter) {
-                filteredDefects = filteredDefects.filter(defect => defect.priority === priorityFilter);
-            }
-            
-            if (assigneeFilter) {
-                filteredDefects = filteredDefects.filter(defect => defect.assigneeId === parseInt(assigneeFilter));
-            }
-            
-            if (projectFilter) {
-                filteredDefects = filteredDefects.filter(defect => defect.projectId === parseInt(projectFilter));
-            }
-            
-            // Сортировка по дате создания (новые сверху)
-            filteredDefects.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-            
-            // Отображение дефектов
-            if (filteredDefects.length === 0) {
-                defectsList.innerHTML = '<p>Дефекты не найдены</p>';
-                return;
-            }
-            
-            filteredDefects.forEach(defect => {
-                const project = appData.projects.find(p => p.id === defect.projectId);
-                const assignee = appData.users.find(u => u.id === defect.assigneeId);
-                const reporter = appData.users.find(u => u.id === defect.reporterId);
-                
-                const defectElement = document.createElement('div');
-                defectElement.className = 'defect-item';
-                defectElement.innerHTML = `
-                    <div class="defect-header">
-                        <div class="defect-title">${defect.title}</div>
-                        <div class="defect-priority priority-${defect.priority}">
-                            ${defect.priority === 'high' ? 'Высокий' : defect.priority === 'medium' ? 'Средний' : 'Низкий'}
-                        </div>
-                    </div>
-                    <div class="defect-meta">
-                        <span>Проект: ${project ? project.name : 'Не указан'}</span>
-                        <span>Исполнитель: ${assignee ? assignee.name : 'Не назначен'}</span>
-                        <span>Срок: ${formatDate(defect.dueDate)}</span>
-                    </div>
-                    <div class="defect-description">${defect.description}</div>
-                    <div class="defect-footer">
-                        <span class="defect-status status-${defect.status}">
-                            ${getStatusText(defect.status)}
-                        </span>
-                        <div class="defect-actions">
-                            <button class="btn btn-sm view-defect" data-id="${defect.id}">Просмотр</button>
-                            ${appData.currentUser.role !== 'observer' ? `
-                                <button class="btn btn-sm edit-defect" data-id="${defect.id}">Редактировать</button>
-                                ${defect.status !== 'closed' && defect.status !== 'cancelled' ? `
-                                    <button class="btn btn-sm btn-success resolve-defect" data-id="${defect.id}">Решить</button>
-                                ` : ''}
-                            ` : ''}
-                        </div>
-                    </div>
-                `;
-                
-                defectsList.appendChild(defectElement);
-            });
-            
-            // Добавление обработчиков событий для кнопок дефектов
-            document.querySelectorAll('.view-defect').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    viewDefect(parseInt(this.dataset.id));
-                });
-            });
-            
-            document.querySelectorAll('.edit-defect').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    editDefect(parseInt(this.dataset.id));
-                });
-            });
-            
-            document.querySelectorAll('.resolve-defect').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    resolveDefect(parseInt(this.dataset.id));
-                });
-            });
-        }
-
-        // Получить текст статуса
-        function getStatusText(status) {
-            const statuses = {
-                'new': 'Новая',
-                'in-progress': 'В работе',
-                'in-review': 'На проверке',
-                'closed': 'Закрыта',
-                'cancelled': 'Отменена'
-            };
-            return statuses[status] || status;
-        }
-
-        // Форматирование даты
-        function formatDate(dateString) {
-            const date = new Date(dateString);
-            return date.toLocaleDateString('ru-RU');
-        }
-
-        // Заполнение фильтров
-        function populateFilters() {
-            const assigneeFilter = document.getElementById('assignee-filter');
-            const projectFilter = document.getElementById('project-filter');
-            const defectAssignee = document.getElementById('defect-assignee');
-            const defectProject = document.getElementById('defect-project');
-            const projectManager = document.getElementById('project-manager');
-            
-            // Очистка существующих опций (кроме первой)
-            while (assigneeFilter.children.length > 1) {
-                assigneeFilter.removeChild(assigneeFilter.lastChild);
-            }
-            
-            while (projectFilter.children.length > 1) {
-                projectFilter.removeChild(projectFilter.lastChild);
-            }
-            
-            while (defectAssignee.children.length > 1) {
-                defectAssignee.removeChild(defectAssignee.lastChild);
-            }
-            
-            while (defectProject.children.length > 1) {
-                defectProject.removeChild(defectProject.lastChild);
-            }
-            
-            while (projectManager.children.length > 1) {
-                projectManager.removeChild(projectManager.lastChild);
-            }
-            
-            // Заполнение пользователями (инженеры и менеджеры)
-            appData.users
-                .filter(user => user.role === 'engineer' || user.role === 'manager')
-                .forEach(user => {
-                    const option1 = document.createElement('option');
-                    option1.value = user.id;
-                    option1.textContent = user.name;
-                    assigneeFilter.appendChild(option1);
-                    
-                    const option2 = document.createElement('option');
-                    option2.value = user.id;
-                    option2.textContent = user.name;
-                    defectAssignee.appendChild(option2);
-                    
-                    if (user.role === 'manager') {
-                        const option3 = document.createElement('option');
-                        option3.value = user.id;
-                        option3.textContent = user.name;
-                        projectManager.appendChild(option3);
+                const projects = ref([
+                    { 
+                        id: 1, 
+                        name: 'ТЦ "Океания"', 
+                        description: 'Крупный торговый центр с аквапарком и кинотеатром', 
+                        managerId: 1,
+                        type: 'commercial',
+                        status: 'active'
+                    },
+                    { 
+                        id: 2, 
+                        name: 'Башня в Москва-Сити', 
+                        description: 'Многофункциональный комплекс в деловом центре Москвы', 
+                        managerId: 1,
+                        type: 'commercial',
+                        status: 'active'
+                    },
+                    { 
+                        id: 3, 
+                        name: 'Завод "Энергомаш"', 
+                        description: 'Производственный комплекс по выпуску энергетического оборудования', 
+                        managerId: 1,
+                        type: 'industrial',
+                        status: 'active'
+                    },
+                    { 
+                        id: 4, 
+                        name: 'ЖК "Северные высоты"', 
+                        description: 'Жилой комплекс премиум-класса', 
+                        managerId: 1,
+                        type: 'residential',
+                        status: 'planning'
                     }
+                ]);
+
+                const defects = ref([]);
+                const comments = ref([]);
+                const history = ref([]);
+
+                // Формы
+                const loginForm = ref({
+                    username: '',
+                    password: ''
                 });
-            
-            // Заполнение проектами
-            appData.projects.forEach(project => {
-                const option1 = document.createElement('option');
-                option1.value = project.id;
-                option1.textContent = project.name;
-                projectFilter.appendChild(option1);
+
+                const defectForm = ref({
+                    id: null,
+                    title: '',
+                    description: '',
+                    priority: 'medium',
+                    projectId: '',
+                    assigneeId: '',
+                    dueDate: ''
+                });
+
+                const projectForm = ref({
+                    id: null,
+                    name: '',
+                    description: '',
+                    type: 'commercial',
+                    status: 'active',
+                    managerId: ''
+                });
+
+                const filters = ref({
+                    status: '',
+                    priority: '',
+                    assignee: '',
+                    project: ''
+                });
+
+                const validationErrors = ref({
+                    title: '',
+                    description: '',
+                    projectId: '',
+                    assigneeId: '',
+                    dueDate: ''
+                });
+
+                // Вычисляемые свойства
+                const engineersAndManagers = computed(() => {
+                    return users.value.filter(user => user.role === 'engineer' || user.role === 'manager');
+                });
+
+                const managers = computed(() => {
+                    return users.value.filter(user => user.role === 'manager');
+                });
+
+                const filteredDefects = computed(() => {
+                    let result = defects.value;
+
+                    // Фильтрация по роли пользователя
+                    if (currentUser.value.role === 'engineer') {
+                        result = result.filter(defect => 
+                            defect.assigneeId === currentUser.value.id || 
+                            defect.reporterId === currentUser.value.id
+                        );
+                    }
+
+                    // Применение дополнительных фильтров
+                    if (filters.value.status) {
+                        result = result.filter(defect => defect.status === filters.value.status);
+                    }
+
+                    if (filters.value.priority) {
+                        result = result.filter(defect => defect.priority === filters.value.priority);
+                    }
+
+                    if (filters.value.assignee) {
+                        result = result.filter(defect => defect.assigneeId === parseInt(filters.value.assignee));
+                    }
+
+                    if (filters.value.project) {
+                        result = result.filter(defect => defect.projectId === parseInt(filters.value.project));
+                    }
+
+                    // Сортировка по дате создания (новые сверху)
+                    return result.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                });
+
+                const defectComments = computed(() => {
+                    if (!selectedDefect.value) return [];
+                    return comments.value
+                        .filter(comment => comment.defectId === selectedDefect.value.id)
+                        .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+                });
+
+                const defectHistory = computed(() => {
+                    if (!selectedDefect.value) return [];
+                    return history.value
+                        .filter(record => record.defectId === selectedDefect.value.id)
+                        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                });
+
+                // Статистика
+                const totalDefects = computed(() => defects.value.length);
                 
-                const option2 = document.createElement('option');
-                option2.value = project.id;
-                option2.textContent = project.name;
-                defectProject.appendChild(option2);
-            });
-        }
+                const activeDefects = computed(() => 
+                    defects.value.filter(d => d.status !== 'closed' && d.status !== 'cancelled').length
+                );
+                
+                const highPriorityDefects = computed(() => 
+                    defects.value.filter(d => d.priority === 'high').length
+                );
+                
+                const defectsByStatus = computed(() => {
+                    const statuses = {};
+                    defects.value.forEach(defect => {
+                        statuses[defect.status] = (statuses[defect.status] || 0) + 1;
+                    });
+                    return statuses;
+                });
+                
+                const defectsByPriority = computed(() => {
+                    const priorities = {};
+                    defects.value.forEach(defect => {
+                        priorities[defect.priority] = (priorities[defect.priority] || 0) + 1;
+                    });
+                    return priorities;
+                });
 
-        // Применение фильтров
-        function applyFilters() {
-            loadDefects();
-        }
-
-        // Показать модальное окно добавления дефекта
-        function showAddDefectModal() {
-            document.getElementById('defect-modal-title').textContent = 'Добавить дефект';
-            document.getElementById('defect-form').reset();
-            document.getElementById('defect-modal').classList.add('active');
-        }
-
-        // Показать модальное окно редактирования дефекта
-        function editDefect(defectId) {
-            const defect = appData.defects.find(d => d.id === defectId);
-            if (!defect) return;
-            
-            document.getElementById('defect-modal-title').textContent = 'Редактировать дефект';
-            document.getElementById('defect-title').value = defect.title;
-            document.getElementById('defect-description').value = defect.description;
-            document.getElementById('defect-priority').value = defect.priority;
-            document.getElementById('defect-project').value = defect.projectId;
-            document.getElementById('defect-assignee').value = defect.assigneeId;
-            document.getElementById('defect-due-date').value = defect.dueDate;
-            
-            // Сохранение ID дефекта для обновления
-            document.getElementById('defect-form').dataset.defectId = defectId;
-            
-            document.getElementById('defect-modal').classList.add('active');
-        }
-
-        // Просмотр дефекта
-        function viewDefect(defectId) {
-            const defect = appData.defects.find(d => d.id === defectId);
-            if (!defect) return;
-            
-            const project = appData.projects.find(p => p.id === defect.projectId);
-            const assignee = appData.users.find(u => u.id === defect.assigneeId);
-            const reporter = appData.users.find(u => u.id === defect.reporterId);
-            
-            document.getElementById('view-defect-title').textContent = defect.title;
-            
-            let content = `
-                <div class="defect-details">
-                    <p><strong>Описание:</strong> ${defect.description}</p>
-                    <div class="defect-meta">
-                        <p><strong>Проект:</strong> ${project ? project.name : 'Не указан'}</p>
-                        <p><strong>Исполнитель:</strong> ${assignee ? assignee.name : 'Не назначен'}</p>
-                        <p><strong>Автор:</strong> ${reporter ? reporter.name : 'Неизвестен'}</p>
-                        <p><strong>Приоритет:</strong> 
-                            <span class="defect-priority priority-${defect.priority}">
-                                ${defect.priority === 'high' ? 'Высокий' : defect.priority === 'medium' ? 'Средний' : 'Низкий'}
-                            </span>
-                        </p>
-                        <p><strong>Статус:</strong> 
-                            <span class="defect-status status-${defect.status}">
-                                ${getStatusText(defect.status)}
-                            </span>
-                        </p>
-                        <p><strong>Срок выполнения:</strong> ${formatDate(defect.dueDate)}</p>
-                        <p><strong>Дата создания:</strong> ${formatDate(defect.createdAt)}</p>
-                        <p><strong>Последнее обновление:</strong> ${formatDate(defect.updatedAt)}</p>
-                    </div>
-                </div>
-            `;
-            
-            document.getElementById('view-defect-content').innerHTML = content;
-            
-            // Загрузка комментариев
-            loadComments(defectId);
-            
-            // Загрузка истории
-            loadHistory(defectId);
-            
-            // Сохранение ID дефекта для добавления комментария
-            document.getElementById('view-defect-modal').dataset.defectId = defectId;
-            
-            document.getElementById('view-defect-modal').classList.add('active');
-        }
-
-        // Загрузка комментариев
-        function loadComments(defectId) {
-            const commentsList = document.getElementById('comments-list');
-            commentsList.innerHTML = '';
-            
-            const defectComments = appData.comments
-                .filter(comment => comment.defectId === defectId)
-                .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-            
-            if (defectComments.length === 0) {
-                commentsList.innerHTML = '<p>Комментарии отсутствуют</p>';
-                return;
-            }
-            
-            defectComments.forEach(comment => {
-                const user = appData.users.find(u => u.id === comment.userId);
-                const commentElement = document.createElement('div');
-                commentElement.className = 'comment';
-                commentElement.innerHTML = `
-                    <div class="comment-header">
-                        <span class="comment-author">${user ? user.name : 'Неизвестный пользователь'}</span>
-                        <span class="comment-date">${formatDate(comment.createdAt)}</span>
-                    </div>
-                    <div class="comment-text">${comment.text}</div>
-                `;
-                commentsList.appendChild(commentElement);
-            });
-        }
-
-        // Загрузка истории изменений
-        function loadHistory(defectId) {
-            const historyList = document.getElementById('history-list');
-            historyList.innerHTML = '';
-            
-            const defectHistory = appData.history
-                .filter(record => record.defectId === defectId)
-                .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-            
-            if (defectHistory.length === 0) {
-                historyList.innerHTML = '<p>История изменений отсутствует</p>';
-                return;
-            }
-            
-            defectHistory.forEach(record => {
-                const user = appData.users.find(u => u.id === record.userId);
-                const historyElement = document.createElement('div');
-                historyElement.className = 'history-item';
-                historyElement.innerHTML = `
-                    <div class="history-action">${record.action}</div>
-                    <div class="history-meta">
-                        <span class="history-user">${user ? user.name : 'Неизвестный пользователь'}</span>
-                        <span class="history-date">${formatDate(record.createdAt)}</span>
-                    </div>
-                `;
-                historyList.appendChild(historyElement);
-            });
-        }
-
-        // Добавление комментария
-        function addComment() {
-            const defectId = parseInt(document.getElementById('view-defect-modal').dataset.defectId);
-            const commentText = document.getElementById('new-comment').value.trim();
-            
-            if (!commentText) {
-                alert('Введите текст комментария');
-                return;
-            }
-            
-            const newComment = {
-                id: appData.comments.length > 0 ? Math.max(...appData.comments.map(c => c.id)) + 1 : 1,
-                defectId: defectId,
-                userId: appData.currentUser.id,
-                text: commentText,
-                createdAt: new Date().toISOString()
-            };
-            
-            appData.comments.push(newComment);
-            saveData();
-            
-            // Обновление отображения комментариев
-            loadComments(defectId);
-            
-            // Очистка поля ввода
-            document.getElementById('new-comment').value = '';
-        }
-
-        // Решение дефекта
-        function resolveDefect(defectId) {
-            const defect = appData.defects.find(d => d.id === defectId);
-            if (!defect) return;
-            
-            // В реальном приложении здесь была бы логика изменения статуса
-            // Для демонстрации просто меняем статус на "На проверке"
-            defect.status = 'in-review';
-            defect.updatedAt = new Date().toISOString();
-            
-            // Добавление записи в историю
-            const historyRecord = {
-                id: appData.history.length > 0 ? Math.max(...appData.history.map(h => h.id)) + 1 : 1,
-                defectId: defectId,
-                userId: appData.currentUser.id,
-                action: 'Статус изменен: В работе → На проверке',
-                createdAt: new Date().toISOString()
-            };
-            
-            appData.history.push(historyRecord);
-            saveData();
-            
-            // Обновление интерфейса
-            loadDefects();
-            
-            alert('Дефект переведен на проверку');
-        }
-
-        // Сохранение дефекта
-        function saveDefect() {
-            const form = document.getElementById('defect-form');
-            const defectId = form.dataset.defectId;
-            
-            const defectData = {
-                title: document.getElementById('defect-title').value,
-                description: document.getElementById('defect-description').value,
-                priority: document.getElementById('defect-priority').value,
-                projectId: parseInt(document.getElementById('defect-project').value),
-                assigneeId: parseInt(document.getElementById('defect-assignee').value),
-                dueDate: document.getElementById('defect-due-date').value
-            };
-            
-            if (!defectData.title || !defectData.description || !defectData.projectId || !defectData.assigneeId || !defectData.dueDate) {
-                alert('Заполните все обязательные поля');
-                return;
-            }
-            
-            if (defectId) {
-                // Редактирование существующего дефекта
-                const defect = appData.defects.find(d => d.id === parseInt(defectId));
-                if (defect) {
-                    Object.assign(defect, defectData);
-                    defect.updatedAt = new Date().toISOString();
+                // Методы
+                const loadData = () => {
+                    const storedUsers = localStorage.getItem('defectSystemUsers');
+                    const storedProjects = localStorage.getItem('defectSystemProjects');
+                    const storedDefects = localStorage.getItem('defectSystemDefects');
+                    const storedComments = localStorage.getItem('defectSystemComments');
+                    const storedHistory = localStorage.getItem('defectSystemHistory');
                     
-                    // Добавление записи в историю
-                    const historyRecord = {
-                        id: appData.history.length > 0 ? Math.max(...appData.history.map(h => h.id)) + 1 : 1,
-                        defectId: parseInt(defectId),
-                        userId: appData.currentUser.id,
-                        action: 'Дефект отредактирован',
+                    if (storedUsers) users.value = JSON.parse(storedUsers);
+                    if (storedProjects) projects.value = JSON.parse(storedProjects);
+                    if (storedDefects) defects.value = JSON.parse(storedDefects);
+                    if (storedComments) comments.value = JSON.parse(storedComments);
+                    if (storedHistory) history.value = JSON.parse(storedHistory);
+                    
+                    // Если дефектов нет, создаем демо-данные
+                    if (defects.value.length === 0) {
+                        initializeDemoData();
+                    }
+                };
+
+                const saveData = () => {
+                    localStorage.setItem('defectSystemUsers', JSON.stringify(users.value));
+                    localStorage.setItem('defectSystemProjects', JSON.stringify(projects.value));
+                    localStorage.setItem('defectSystemDefects', JSON.stringify(defects.value));
+                    localStorage.setItem('defectSystemComments', JSON.stringify(comments.value));
+                    localStorage.setItem('defectSystemHistory', JSON.stringify(history.value));
+                };
+
+                const initializeDemoData = () => {
+                    // Дефекты для разных проектов
+                    defects.value = [
+                        { 
+                            id: 1, 
+                            title: 'Отсутствие окон на 19 этаже', 
+                            description: 'Не установлены оконные блоки на 19 этаже северного фасада', 
+                            priority: 'high', 
+                            status: 'new',
+                            projectId: 2, // Башня в Москва-Сити
+                            assigneeId: 2,
+                            reporterId: 3,
+                            dueDate: '2025-09-19',
+                            createdAt: new Date('2024-01-15').toISOString(),
+                            updatedAt: new Date('2024-01-15').toISOString()
+                        },
+                        { 
+                            id: 2, 
+                            title: 'Протечка в системе отопления', 
+                            description: 'Протечка в стояке отопления на 5 этаже торговой галереи', 
+                            priority: 'high', 
+                            status: 'in-progress',
+                            projectId: 1, // ТЦ Океания
+                            assigneeId: 4,
+                            reporterId: 1,
+                            dueDate: '2024-02-20',
+                            createdAt: new Date('2024-01-10').toISOString(),
+                            updatedAt: new Date('2024-01-12').toISOString()
+                        },
+                        { 
+                            id: 3, 
+                            title: 'Неисправность конвейерной линии', 
+                            description: 'Замедление работы конвейерной линии в цехе №3', 
+                            priority: 'medium', 
+                            status: 'in-review',
+                            projectId: 3, // Завод
+                            assigneeId: 2,
+                            reporterId: 3,
+                            dueDate: '2024-01-25',
+                            createdAt: new Date('2024-01-05').toISOString(),
+                            updatedAt: new Date('2024-01-18').toISOString()
+                        },
+                        { 
+                            id: 4, 
+                            title: 'Трещина в несущей колонне', 
+                            description: 'Обнаружена трещина в несущей колонне на уровне 25 этажа', 
+                            priority: 'high', 
+                            status: 'new',
+                            projectId: 2, // Башня в Москва-Сити
+                            assigneeId: 4,
+                            reporterId: 1,
+                            dueDate: '2024-03-01',
+                            createdAt: new Date('2024-01-20').toISOString(),
+                            updatedAt: new Date('2024-01-20').toISOString()
+                        },
+                        { 
+                            id: 5, 
+                            title: 'Неровности в отделке потолка', 
+                            description: 'Заметные неровности на потолке в фуд-корте', 
+                            priority: 'medium', 
+                            status: 'closed',
+                            projectId: 1, // ТЦ Океания
+                            assigneeId: 2,
+                            reporterId: 3,
+                            dueDate: '2024-01-10',
+                            createdAt: new Date('2023-12-25').toISOString(),
+                            updatedAt: new Date('2024-01-08').toISOString()
+                        }
+                    ];
+                    
+                    // Комментарии
+                    comments.value = [
+                        { id: 1, defectId: 2, userId: 2, text: 'Начал работу по устранению протечки', createdAt: new Date('2024-01-12').toISOString() },
+                        { id: 2, defectId: 2, userId: 1, text: 'Прошу ускорить работы', createdAt: new Date('2024-01-13').toISOString() },
+                        { id: 3, defectId: 3, userId: 2, text: 'Выполнил настройку конвейерной линии', createdAt: new Date('2024-01-18').toISOString() }
+                    ];
+                    
+                    // История изменений
+                    history.value = [
+                        { id: 1, defectId: 2, userId: 2, action: 'Статус изменен: Новая → В работе', createdAt: new Date('2024-01-12').toISOString() },
+                        { id: 2, defectId: 3, userId: 2, action: 'Статус изменен: В работе → На проверке', createdAt: new Date('2024-01-18').toISOString() },
+                        { id: 3, defectId: 5, userId: 1, action: 'Статус изменен: На проверке → Закрыта', createdAt: new Date('2024-01-08').toISOString() }
+                    ];
+                    
+                    saveData();
+                };
+
+                const checkAuth = () => {
+                    const storedUser = localStorage.getItem('defectSystemCurrentUser');
+                    if (storedUser) {
+                        currentUser.value = JSON.parse(storedUser);
+                    }
+                };
+
+                const handleLogin = () => {
+                    const user = users.value.find(u => 
+                        u.username === loginForm.value.username && 
+                        u.password === loginForm.value.password
+                    );
+                    
+                    if (user) {
+                        currentUser.value = user;
+                        localStorage.setItem('defectSystemCurrentUser', JSON.stringify(user));
+                        loginForm.value.username = '';
+                        loginForm.value.password = '';
+                    } else {
+                        alert('Неверное имя пользователя или пароль');
+                    }
+                };
+
+                const handleLogout = () => {
+                    currentUser.value = null;
+                    localStorage.removeItem('defectSystemCurrentUser');
+                };
+
+                const switchTab = (tabName) => {
+                    activeTab.value = tabName;
+                };
+
+                const getRoleName = (role) => {
+                    const roles = {
+                        'manager': 'Менеджер',
+                        'engineer': 'Инженер',
+                        'observer': 'Наблюдатель'
+                    };
+                    return roles[role] || role;
+                };
+
+                const getStatusText = (status) => {
+                    const statuses = {
+                        'new': 'Новая',
+                        'in-progress': 'В работе',
+                        'in-review': 'На проверке',
+                        'closed': 'Закрыта',
+                        'cancelled': 'Отменена'
+                    };
+                    return statuses[status] || status;
+                };
+
+                const getPriorityText = (priority) => {
+                    const priorities = {
+                        'high': 'Высокий',
+                        'medium': 'Средний',
+                        'low': 'Низкий'
+                    };
+                    return priorities[priority] || priority;
+                };
+
+                const getProjectType = (type) => {
+                    const types = {
+                        'commercial': 'Коммерческий',
+                        'residential': 'Жилой',
+                        'industrial': 'Промышленный',
+                        'infrastructure': 'Инфраструктурный'
+                    };
+                    return types[type] || type;
+                };
+
+                const getProjectStatus = (status) => {
+                    const statuses = {
+                        'planning': 'Планирование',
+                        'active': 'Активный',
+                        'on-hold': 'Приостановлен',
+                        'completed': 'Завершен'
+                    };
+                    return statuses[status] || status;
+                };
+
+                const formatDate = (dateString) => {
+                    if (!dateString) return '';
+                    const date = new Date(dateString);
+                    return date.toLocaleDateString('ru-RU');
+                };
+
+                const getProjectName = (projectId) => {
+                    const project = projects.value.find(p => p.id === projectId);
+                    return project ? project.name : 'Не указан';
+                };
+
+                const getUserName = (userId) => {
+                    const user = users.value.find(u => u.id === userId);
+                    return user ? user.name : 'Не назначен';
+                };
+
+                const getDefectsCountByProject = (projectId) => {
+                    return defects.value.filter(d => d.projectId === projectId).length;
+                };
+
+                const canEditDefect = (defect) => {
+                    if (currentUser.value.role === 'manager') return true;
+                    if (currentUser.value.role === 'engineer') {
+                        return defect.assigneeId === currentUser.value.id || defect.reporterId === currentUser.value.id;
+                    }
+                    return false;
+                };
+
+                const selectProject = (project) => {
+                    selectedProject.value = project;
+                };
+
+                const showAddDefectModal = () => {
+                    defectForm.value = {
+                        id: null,
+                        title: '',
+                        description: '',
+                        priority: 'medium',
+                        projectId: '',
+                        assigneeId: '',
+                        dueDate: ''
+                    };
+                    clearValidationErrors();
+                    showDefectModal.value = true;
+                };
+
+                const editDefect = (defectId) => {
+                    const defect = defects.value.find(d => d.id === defectId);
+                    if (defect) {
+                        defectForm.value = { ...defect };
+                        clearValidationErrors();
+                        showDefectModal.value = true;
+                    }
+                };
+
+                const viewDefect = (defectId) => {
+                    selectedDefect.value = defects.value.find(d => d.id === defectId);
+                    if (selectedDefect.value) {
+                        showViewDefectModal.value = true;
+                    }
+                };
+
+                const resolveDefect = (defectId) => {
+                    const defect = defects.value.find(d => d.id === defectId);
+                    if (defect) {
+                        defect.status = 'in-review';
+                        defect.updatedAt = new Date().toISOString();
+                        
+                        const historyRecord = {
+                            id: history.value.length > 0 ? Math.max(...history.value.map(h => h.id)) + 1 : 1,
+                            defectId: defectId,
+                            userId: currentUser.value.id,
+                            action: 'Статус изменен: В работе → На проверке',
+                            createdAt: new Date().toISOString()
+                        };
+                        
+                        history.value.push(historyRecord);
+                        saveData();
+                        
+                        alert('Дефект переведен на проверку');
+                    }
+                };
+
+                const clearValidationErrors = () => {
+                    validationErrors.value = {
+                        title: '',
+                        description: '',
+                        projectId: '',
+                        assigneeId: '',
+                        dueDate: ''
+                    };
+                };
+
+                const validateDefectForm = () => {
+                    clearValidationErrors();
+                    let isValid = true;
+
+                    if (!defectForm.value.title || defectForm.value.title.trim() === '') {
+                        validationErrors.value.title = 'Заголовок обязателен для заполнения';
+                        isValid = false;
+                    }
+
+                    if (!defectForm.value.description || defectForm.value.description.trim() === '') {
+                        validationErrors.value.description = 'Описание обязательно для заполнения';
+                        isValid = false;
+                    }
+
+                    if (!defectForm.value.assigneeId) {
+                        validationErrors.value.assigneeId = 'Исполнитель обязателен для выбора';
+                        isValid = false;
+                    }
+
+                    if (!defectForm.value.dueDate) {
+                        validationErrors.value.dueDate = 'Срок выполнения обязателен для заполнения';
+                        isValid = false;
+                    }
+
+                    return isValid;
+                };
+
+                const validateAndConfirmDefect = () => {
+                    if (validateDefectForm()) {
+                        showDefectModal.value = false;
+                        showConfirmationModal.value = true;
+                    }
+                };
+
+                const saveDefect = () => {
+                    if (defectForm.value.id) {
+                        const defect = defects.value.find(d => d.id === defectForm.value.id);
+                        if (defect) {
+                            Object.assign(defect, defectForm.value);
+                            defect.updatedAt = new Date().toISOString();
+                            
+                            const historyRecord = {
+                                id: history.value.length > 0 ? Math.max(...history.value.map(h => h.id)) + 1 : 1,
+                                defectId: defectForm.value.id,
+                                userId: currentUser.value.id,
+                                action: 'Дефект отредактирован',
+                                createdAt: new Date().toISOString()
+                            };
+                            
+                            history.value.push(historyRecord);
+                        }
+                    } else {
+                        const newDefect = {
+                            id: defects.value.length > 0 ? Math.max(...defects.value.map(d => d.id)) + 1 : 1,
+                            ...defectForm.value,
+                            status: 'new',
+                            reporterId: currentUser.value.id,
+                            createdAt: new Date().toISOString(),
+                            updatedAt: new Date().toISOString()
+                        };
+                        
+                        defects.value.push(newDefect);
+                    }
+                    
+                    saveData();
+                    closeModals();
+                };
+
+                const addComment = () => {
+                    if (!newComment.value.trim()) {
+                        alert('Введите текст комментария');
+                        return;
+                    }
+                    
+                    if (!selectedDefect.value) return;
+                    
+                    const newCommentObj = {
+                        id: comments.value.length > 0 ? Math.max(...comments.value.map(c => c.id)) + 1 : 1,
+                        defectId: selectedDefect.value.id,
+                        userId: currentUser.value.id,
+                        text: newComment.value,
                         createdAt: new Date().toISOString()
                     };
                     
-                    appData.history.push(historyRecord);
-                }
-            } else {
-                // Создание нового дефекта
-                const newDefect = {
-                    id: appData.defects.length > 0 ? Math.max(...appData.defects.map(d => d.id)) + 1 : 1,
-                    ...defectData,
-                    status: 'new',
-                    reporterId: appData.currentUser.id,
-                    createdAt: new Date().toISOString(),
-                    updatedAt: new Date().toISOString()
+                    comments.value.push(newCommentObj);
+                    saveData();
+                    newComment.value = '';
                 };
-                
-                appData.defects.push(newDefect);
-            }
-            
-            saveData();
-            closeAllModals();
-            loadDefects();
-        }
 
-        // Загрузка проектов
-        function loadProjects() {
-            const projectsList = document.getElementById('projects-list');
-            projectsList.innerHTML = '';
-            
-            if (appData.projects.length === 0) {
-                projectsList.innerHTML = '<p>Проекты не найдены</p>';
-                return;
-            }
-            
-            appData.projects.forEach(project => {
-                const manager = appData.users.find(u => u.id === project.managerId);
-                const projectDefects = appData.defects.filter(d => d.projectId === project.id);
-                
-                const projectElement = document.createElement('div');
-                projectElement.className = 'defect-item';
-                projectElement.innerHTML = `
-                    <div class="defect-header">
-                        <div class="defect-title">${project.name}</div>
-                        <div class="defect-priority">
-                            ${projectDefects.length} дефектов
-                        </div>
-                    </div>
-                    <div class="defect-meta">
-                        <span>Менеджер: ${manager ? manager.name : 'Не назначен'}</span>
-                    </div>
-                    <div class="defect-description">${project.description}</div>
-                    <div class="defect-actions">
-                        <button class="btn btn-sm view-project" data-id="${project.id}">Просмотр</button>
-                        ${appData.currentUser.role === 'manager' ? `
-                            <button class="btn btn-sm edit-project" data-id="${project.id}">Редактировать</button>
-                            <button class="btn btn-sm btn-danger delete-project" data-id="${project.id}">Удалить</button>
-                        ` : ''}
-                    </div>
-                `;
-                
-                projectsList.appendChild(projectElement);
-            });
-            
-            // Добавление обработчиков событий для кнопок проектов
-            document.querySelectorAll('.view-project').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    viewProject(parseInt(this.dataset.id));
-                });
-            });
-            
-            if (appData.currentUser.role === 'manager') {
-                document.querySelectorAll('.edit-project').forEach(btn => {
-                    btn.addEventListener('click', function() {
-                        editProject(parseInt(this.dataset.id));
-                    });
-                });
-                
-                document.querySelectorAll('.delete-project').forEach(btn => {
-                    btn.addEventListener('click', function() {
-                        deleteProject(parseInt(this.dataset.id));
-                    });
-                });
-            }
-        }
-
-        // Просмотр проекта
-        function viewProject(projectId) {
-            const project = appData.projects.find(p => p.id === projectId);
-            if (!project) return;
-            
-            const manager = appData.users.find(u => u.id === project.managerId);
-            const projectDefects = appData.defects.filter(d => d.projectId === projectId);
-            
-            let content = `
-                <h3>${project.name}</h3>
-                <p><strong>Описание:</strong> ${project.description}</p>
-                <p><strong>Менеджер:</strong> ${manager ? manager.name : 'Не назначен'}</p>
-                <p><strong>Количество дефектов:</strong> ${projectDefects.length}</p>
-                
-                <h4>Дефекты проекта</h4>
-            `;
-            
-            if (projectDefects.length === 0) {
-                content += '<p>Дефекты не найдены</p>';
-            } else {
-                content += '<ul>';
-                projectDefects.forEach(defect => {
-                    content += `<li>${defect.title} (${getStatusText(defect.status)})</li>`;
-                });
-                content += '</ul>';
-            }
-            
-            alert(content);
-        }
-
-        // Показать модальное окно добавления проекта
-        function showAddProjectModal() {
-            document.getElementById('project-modal-title').textContent = 'Добавить проект';
-            document.getElementById('project-form').reset();
-            document.getElementById('project-form').dataset.projectId = '';
-            document.getElementById('project-modal').classList.add('active');
-        }
-
-        // Редактирование проекта
-        function editProject(projectId) {
-            const project = appData.projects.find(p => p.id === projectId);
-            if (!project) return;
-            
-            document.getElementById('project-modal-title').textContent = 'Редактировать проект';
-            document.getElementById('project-name').value = project.name;
-            document.getElementById('project-description').value = project.description;
-            document.getElementById('project-manager').value = project.managerId;
-            
-            document.getElementById('project-form').dataset.projectId = projectId;
-            document.getElementById('project-modal').classList.add('active');
-        }
-
-        // Удаление проекта
-        function deleteProject(projectId) {
-            if (!confirm('Вы уверены, что хотите удалить проект? Все связанные дефекты также будут удалены.')) {
-                return;
-            }
-            
-            // Удаление проекта
-            appData.projects = appData.projects.filter(p => p.id !== projectId);
-            
-            // Удаление связанных дефектов
-            appData.defects = appData.defects.filter(d => d.projectId !== projectId);
-            
-            saveData();
-            loadProjects();
-        }
-
-        // Сохранение проекта
-        function saveProject() {
-            const form = document.getElementById('project-form');
-            const projectId = form.dataset.projectId;
-            
-            const projectData = {
-                name: document.getElementById('project-name').value,
-                description: document.getElementById('project-description').value,
-                managerId: parseInt(document.getElementById('project-manager').value)
-            };
-            
-            if (!projectData.name || !projectData.managerId) {
-                alert('Заполните все обязательные поля');
-                return;
-            }
-            
-            if (projectId) {
-                // Редактирование существующего проекта
-                const project = appData.projects.find(p => p.id === parseInt(projectId));
-                if (project) {
-                    Object.assign(project, projectData);
-                }
-            } else {
-                // Создание нового проекта
-                const newProject = {
-                    id: appData.projects.length > 0 ? Math.max(...appData.projects.map(p => p.id)) + 1 : 1,
-                    ...projectData
+                const showAddProjectModal = () => {
+                    projectForm.value = {
+                        id: null,
+                        name: '',
+                        description: '',
+                        type: 'commercial',
+                        status: 'active',
+                        managerId: ''
+                    };
+                    showProjectModal.value = true;
                 };
-                
-                appData.projects.push(newProject);
+
+                const editProject = (projectId) => {
+                    const project = projects.value.find(p => p.id === projectId);
+                    if (project) {
+                        projectForm.value = { ...project };
+                        showProjectModal.value = true;
+                    }
+                };
+
+                const viewProjectDetails = (projectId) => {
+                    const project = projects.value.find(p => p.id === projectId);
+                    if (project) {
+                        const manager = users.value.find(u => u.id === project.managerId);
+                        const projectDefects = defects.value.filter(d => d.projectId === projectId);
+                        
+                        let content = `
+                            <h3>${project.name}</h3>
+                            <p><strong>Описание:</strong> ${project.description}</p>
+                            <p><strong>Менеджер:</strong> ${manager ? manager.name : 'Не назначен'}</p>
+                            <p><strong>Тип:</strong> ${getProjectType(project.type)}</p>
+                            <p><strong>Статус:</strong> ${getProjectStatus(project.status)}</p>
+                            <p><strong>Количество дефектов:</strong> ${projectDefects.length}</p>
+                            
+                            <h4>Дефекты проекта</h4>
+                        `;
+                        
+                        if (projectDefects.length === 0) {
+                            content += '<p>Дефекты не найдены</p>';
+                        } else {
+                            content += '<ul>';
+                            projectDefects.forEach(defect => {
+                                content += `<li>${defect.title} (${getStatusText(defect.status)})</li>`;
+                            });
+                            content += '</ul>';
+                        }
+                        
+                        alert(content);
+                    }
+                };
+
+                const deleteProject = (projectId) => {
+                    if (!confirm('Вы уверены, что хотите удалить проект? Все связанные дефекты также будут удалены.')) {
+                        return;
+                    }
+                    
+                    projects.value = projects.value.filter(p => p.id !== projectId);
+                    defects.value = defects.value.filter(d => d.projectId !== projectId);
+                    saveData();
+                };
+
+                const saveProject = () => {
+                    if (!projectForm.value.name || !projectForm.value.managerId) {
+                        alert('Заполните все обязательные поля');
+                        return;
+                    }
+                    
+                    if (projectForm.value.id) {
+                        const project = projects.value.find(p => p.id === projectForm.value.id);
+                        if (project) {
+                            Object.assign(project, projectForm.value);
+                        }
+                    } else {
+                        const newProject = {
+                            id: projects.value.length > 0 ? Math.max(...projects.value.map(p => p.id)) + 1 : 1,
+                            ...projectForm.value
+                        };
+                        
+                        projects.value.push(newProject);
+                    }
+                    
+                    saveData();
+                    closeModals();
+                };
+
+                const applyFilters = () => {
+                    // Фильтры применяются автоматически через computed свойство
+                };
+
+                const exportData = () => {
+                    alert('Функция экспорта данных будет реализована в полной версии системы');
+                };
+
+                const closeModals = () => {
+                    showDefectModal.value = false;
+                    showViewDefectModal.value = false;
+                    showProjectModal.value = false;
+                    showConfirmationModal.value = false;
+                    selectedDefect.value = null;
+                    newComment.value = '';
+                    clearValidationErrors();
+                };
+
+                // Инициализация при загрузке
+                onMounted(() => {
+                    loadData();
+                    checkAuth();
+                });
+
+                return {
+                    currentUser,
+                    activeTab,
+                    showDefectModal,
+                    showViewDefectModal,
+                    showProjectModal,
+                    showConfirmationModal,
+                    selectedDefect,
+                    selectedProject,
+                    newComment,
+                    
+                    users,
+                    projects,
+                    defects,
+                    comments,
+                    history,
+                    
+                    loginForm,
+                    defectForm,
+                    projectForm,
+                    filters,
+                    validationErrors,
+                    
+                    engineersAndManagers,
+                    managers,
+                    filteredDefects,
+                    defectComments,
+                    defectHistory,
+                    totalDefects,
+                    activeDefects,
+                    highPriorityDefects,
+                    defectsByStatus,
+                    defectsByPriority,
+                    
+                    handleLogin,
+                    handleLogout,
+                    switchTab,
+                    getRoleName,
+                    getStatusText,
+                    getPriorityText,
+                    getProjectType,
+                    getProjectStatus,
+                    formatDate,
+                    getProjectName,
+                    getUserName,
+                    getDefectsCountByProject,
+                    canEditDefect,
+                    selectProject,
+                    showAddDefectModal,
+                    editDefect,
+                    viewDefect,
+                    resolveDefect,
+                    validateAndConfirmDefect,
+                    saveDefect,
+                    addComment,
+                    showAddProjectModal,
+                    editProject,
+                    viewProjectDetails,
+                    deleteProject,
+                    saveProject,
+                    applyFilters,
+                    exportData,
+                    closeModals
+                };
             }
-            
-            saveData();
-            closeAllModals();
-            loadProjects();
-            populateFilters(); // Обновление фильтров, так как добавился новый проект
-        }
-
-        // Загрузка отчетов
-        function loadReports() {
-            // В реальном приложении здесь была бы логика загрузки и отображения отчетов
-            // Для демонстрации просто показываем сообщение
-            console.log('Загрузка отчетов...');
-        }
-
-        // Экспорт данных
-        function exportData() {
-            // В реальном приложении здесь была бы логика экспорта данных
-            // Для демонстрации просто показываем сообщение
-            alert('Функция экспорта данных будет реализована в полной версии системы');
-        }
-
-        // Закрытие всех модальных окон
-        function closeAllModals() {
-            document.querySelectorAll('.modal').forEach(modal => {
-                modal.classList.remove('active');
-            });
-        }
+        }).mount('#app');
     </script>
 </body>
 </html>
